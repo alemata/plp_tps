@@ -83,7 +83,7 @@ visitasPorMonumento m = mapReduce (\l -> [(l,1)]) (\(x,y) -> [(x,sum y)]) m
 
 -- Ejercicio 12
 monumentosTop :: [String] -> [String]
-monumentosTop m = mapReduce (\(x,y) -> [(y,x)]) (\(x,y) ->  y) (visitasPorMonumento m)
+monumentosTop m = mapReduce (\(x,y) -> [(-y,x)]) (\(x,y) ->  y) (visitasPorMonumento m)
 
 -- Ejercicio 13 
 monumentosPorPais :: [(Structure, Dict String String)] -> [(String, Int)]
