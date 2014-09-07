@@ -107,5 +107,22 @@ main = hspec $ do
 
     it "monumentos top devuelve una lista ordenada según cuántas veces haya sido visitado un monumento" $ do
       monumentosTop [ "m1", "m0", "m0", "m0", "m2", "m2", "m3"]  `shouldSatisfy` (\res -> res == ["m0", "m2", "m3", "m1"] || res == ["m0", "m2", "m1", "m3"])
+      monumentosTop [ "Obelisco", "Obelisco", "Cid", "San Martin", "San Martin", "San Martin", "Obelisco", "Obelisco"]  `shouldBe` ["Obelisco", "San Martin", "Cid"]
 
-    --it "monumentos por país determina la cantidad de monumentos existen por cada país"
+
+    it "monumentos por país determina la cantidad de monumentos existen por cada país" $ do
+      monumentosPorPais [ (Monument, [("name","Obelisco"),("latlong","-36.6033,-57.3817"),("country", "Argentina")]),
+                          (Street, [("name","Int. Güiraldes"),("latlong","-34.5454,-58.4386"),("country", "Argentina")]),
+                          (Monument, [("name", "San Martín"),("country", "Argentina"),("latlong", "-34.6033,-58.3817")]),
+                          (City, [("name", "Paris"),("country", "Francia"),("latlong", "-24.6033,-18.3817")]),
+                          (Monument, [("name", "Bagdad Bridge"),("country", "Irak"),("new_field", "new"),("latlong", "-11.6033,-12.3817")])] 
+                                                                                `shouldMatchList` [("Argentina",2),("Irak",1)]
+      monumentosPorPais [ (Monument, [("Antiguedad","muchos años"),("name","Catedral de Leon"),("country", "España")]),
+                          (Monument, [("name","Cristo-Rei de Almada"),("Renovacion", "ninguna"),("country", "Portugal")]),
+                          (Monument, [("name", "Monasterio de Piedra"),("country", "España")]),
+                          (Monument, [("name", "Iglesia de San Francisco"),("country", "Argentina")]),
+                          (Street, [("name", "Corrientes"),("country", "Argentina")]),
+                          (City, [("name", "Berlina"),("country", "Alemania"),("habitantes", "Dos millones")]),
+                          (Street, [("name", "Armenia"),("country", "Argentina"),("Barrio", "Palermo")])] 
+
+                                                                                `shouldMatchList` [("Argentina",1),("España",2),("Portugal",1)]
