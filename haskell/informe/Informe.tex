@@ -1,0 +1,267 @@
+\documentclass[10pt, a4paper,english,spanish,hidelinks]{article}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{caratula}
+\usepackage[spanish, activeacute]{babel}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage[width=15.5cm, left=3cm, top=2.5cm, height= 24.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage[utf8]{inputenc}
+\usepackage{listings}
+\usepackage{multicol}
+\usepackage{subfig}
+\usepackage{float}
+\usepackage{color,hyperref}
+
+
+\usepackage{listings}
+\usepackage{babel}
+\usepackage{url}
+\usepackage{lscape}
+\parindent = 15 pt
+\parskip = 11 pt
+
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{color}
+\usepackage{appendix}
+\usepackage{fancyhdr}
+
+
+\materia{Paradigmas de Lenguajes de Programación}
+
+\titulo{Trabajo Práctico 1}
+\fecha{09 de Septiembre de 2014}
+\grupo{Grupo tas lokito}
+\integrante{Gauder María Lara}{027/10}{marialaraa@gmail.com}
+\integrante{Mataloni Alejandro}{706/07}{amataloni@gmail.com}
+\integrante{Reartes Marisol}{422/10}{marisol.r5@hotmail.com}
+
+
+\begin{document}
+\pagestyle{myheadings}
+\maketitle
+\markboth{Paradigmas de Lenguajes de Programación}{}
+
+\thispagestyle{empty}
+\tableofcontents
+\newpage
+\section{Código y comentarios}
+A continuación se muestra cada función con su explicación.
+
+\subsection{Ejercicio 1}
+La función belongs define si cierto elemento pertenece a las claves del diccionario dado como argumento.
+
+\begin{verbatim}
+belongs :: Eq k => k -> Dict k v -> Bool
+belongs k d = not (null [x | x <- d, fst x == k])
+
+(?) :: Eq k => Dict k v -> k -> Bool
+d ? k = belongs k d
+\end{verbatim}
+
+Ejemplo:
+
+\begin{verbatim}
+[("Pedro", ["Berlin", "Paris"]), ("Juan", ["Peru", "Amsterdam"])] ? "Juana" 
+--> False
+\end{verbatim}
+
+\subsection{Ejercicio 2}
+La función get retorna el significado correspondiente a la clave dada como argumento, se asume que el mismo se encuentra definido.
+\begin{verbatim}
+get :: Eq k => k -> Dict k v -> v
+get k d = head ([snd x | x <- d, fst x == k])
+
+(!) :: Eq k => Dict k v -> k -> v 
+d ! k = get k d
+\end{verbatim}
+Ejemplo:
+\begin{verbatim}
+get "Argentina" [("Chile", 5), ("Argentina", 9), ("Uruguay", 3)]
+--> 9
+
+[( " calle " ," San Blas " ) ,( " ciudad " ," Hurlingham " )] ! " ciudad "
+--> " Hurlingham "
+\end{verbatim}
+
+\subsection{Ejercicio 3}
+La función insertWith incorpora un nuevo significado a una clave dada, utilizando como función de incorporación a aquella dada como argumento. Si no existe la clave en el diccionario, entonces se la misma será agregada.
+\begin{verbatim}
+insertWith :: Eq k => (v -> v -> v) -> k -> v -> Dict k v -> Dict k v
+insertWith fadd k v d
+  | not (d ? k) = d ++ [(k,v)]
+  | d ? k       = [if (fst x == k) then (fst x, fadd (snd x) v ) else x | x <- d]
+\end{verbatim}
+Ejemplo:
+
+\begin{verbatim}
+insertWith (++) 1 [99,188] [(1,[1]),(2,[2])]
+--> [(1,[1,99,188]),(2,[2])]
+\end{verbatim}
+
+\subsection{Ejercicio 4}
+En este caso, se ordenará los datos del array pasado como parámetro para que pase a tener una estructura de tipo Diccionario. Se asociará cada clave con la lista de todos los valores que tenía en el array original.
+\begin{verbatim}
+groupByKey :: Eq k => [(k,v)] -> Dict k [v]
+groupByKey l = foldr (\x xs -> insertWith (++) (fst x) [(snd x)] xs) [] l
+\end{verbatim}
+Ejemplo:
+\begin{verbatim}
+groupByKey [("fruta", "Banana"), ("carne", "Picada"), ("verdura", "Espinaca")]
+--> [("fruta", ["Banana"]), ("carne", ["Picada"]),("verdura", ["Espinaca"])]
+\end{verbatim}
+
+
+
+
+\subsection{Ejercicio 5}
+En unionWith se espera que a partir de dos diccionarios y una función de unificación, se combinen ambos para obtener un único diccionario resultante.
+\begin{verbatim}
+unionWith :: Eq k => (v -> v -> v) -> Dict k v -> Dict k v -> Dict k v
+unionWith f dict = foldr (\x rec_dict -> insertWith f (fst x) (snd x) rec_dict) dict
+\end{verbatim}
+Ejemplo:
+\begin{verbatim}
+unionWith (+) [("Algodon", 20), ("Azucar", 10)]  [("Miel", 5),("Algodon", 5)]
+--> [("Algodon", 25), ("Azucar", 10),("Miel", 5)]
+\end{verbatim}
+
+
+\subsection{Ejercicio 6}
+Tendrá como objetivo que a partir de una lista divide la carga de la misma de manera balanceada entre una determinada cantidad de sublistas. 
+
+\begin{verbatim}
+distributionProcess :: Int ->  [a] -> [[a]]
+distributionProcess n = foldr (\x rec -> (tail rec) ++ [x : (head rec)]) (replicate n [])
+\end{verbatim}
+
+Ejemplo:
+\begin{verbatim}
+distributionProcess 1 [1, 4, 100, 104]
+--> [[1, 4, 100, 104]]
+\end{verbatim}
+
+\subsection{Ejercicio 7}
+La función mapperProcess deberá aplicar el tipo Mapper a cada uno de los elementos pasados en el array por parámetro y luego agrupar los resultados por claves. 
+\begin{verbatim}
+mapperProcess :: Eq k => Mapper a k v -> [a] -> [(k,[v])]
+mapperProcess m la = groupByKey (concat [m e | e <- la])
+\end{verbatim}
+
+Ejemplo:
+\begin{verbatim}
+mapperProcess (\x -> [(x,1)]) ["Pablo", "Pedro", "Pepe", "Pedro", "Pedro", "Guillermo", "Aldana"] 
+--> [("Pablo",[1]), ("Pedro",[1,1,1]), ("Pepe",[1]),("Guillermo",[1]), ("Aldana",[1])]
+\end{verbatim}
+     
+\subsection{Ejercicio 8}
+combinerProcess consiste en unificar los resultados de cada sublista pasada por parámetro agrupándolos por clave y ordenandolos de manera creciente según la clave. 
+\begin{verbatim}
+combinerProcess :: (Eq k, Ord k) => [[(k, [v])]] -> [(k,[v])]
+combinerProcess l = sortBy (comparing $ fst) (foldr (\x rec -> unionWith (++)  x rec) [] l)
+\end{verbatim}
+
+Ejemplo:
+\begin{verbatim}
+combinerProcess [[("Pablo",[1]), ("Pedro",[1,1,1])], [("Pepe",[1])],[("Guillermo",[1]), 
+("Aldana",[1])]]
+--> [("Aldana",[1]), ("Guillermo",[1]),("Pablo",[1]), ("Pedro",[1,1,1]), ("Pepe",[1])]
+\end{verbatim}
+
+      
+\subsection{Ejercicio 9}
+La función reducerProcess aplica el tipo Reducer a cada para de elementos de la lista pasada como argumento y luego combina los resultados para obtener una única lista. 
+\begin{verbatim}
+reducerProcess :: Reducer k v b -> [(k, [v])] -> [b]
+reducerProcess r l = concat [r e | e <- l]
+\end{verbatim}
+
+Ejemplo:
+\begin{verbatim}
+reducerProcess (\(x,y) -> [sum y])  [("Alvear",[3,5,1,32]),("Cabildo",[4,6,4,4,4]),
+("Independencia",[1,1])] 
+--> [41, 22, 2]
+\end{verbatim}
+      
+
+\subsection{Ejercicio 10}
+La función mapReduce combina todas las instrucciones desarrolladas de la Sección 2, para poder implementar una técnica de MapReduce, que permite en tiempo óptimo procesar grandes cantidades de datos.
+\begin{verbatim}
+mapReduce :: (Eq k, Ord k) => Mapper a k v -> Reducer k v b -> [a] -> [b]
+mapReduce m r l = reducerProcess r (combinerProcess [mapperProcess m x | x <- dist])
+  where dist = distributionProcess 100 l
+\end{verbatim}
+
+Ejemplo:
+\begin{verbatim}
+mapReduce (\(nom,ciudad) -> [(ciudad,1)]) (\(ciudad,cant) -> [(ciudad, sum cant)])
+[("Pablo","Berlin"), ("Gabriela","Amsterdam"), ("Taihú","Cairo"), ("Pablo", "Cairo"),("Taihú","Amsterdam"), ("Juan","Amsterdam")] 
+--> [("Amsterdam", 3), ("Berlin", 1), ("Cairo", 2)]
+ \end{verbatim}
+
+\subsection{Ejercicio 11}
+La función visitasPorMonumento deberá, a partir de un array de nombres de monumentos repetidos generar un Diccionario que indique la cantidad de repeticiones que hay por cada uno. 
+\begin{verbatim}
+visitasPorMonumento :: [String] -> Dict String Int
+visitasPorMonumento m = mapReduce (\l -> [(l,1)]) (\(x,y) -> [(x,sum y)]) m
+\end{verbatim}
+
+Ejemplo:
+\begin{verbatim}
+ visitasPorMonumento [ "Obelisco", "Cid", "San Martín", "Cid", "Bagdad Bridge", "Cid", 
+ "San Martín", "Obelisco"] 
+--> [("Obelisco",2), ("Cid",3), ("San Martín",2), ("Bagdad Bridge", 1)]
+\end{verbatim}
+ 
+
+\subsection{Ejercicio 12}
+En este caso, monumentosTop deberá, a partir de una lista de nombres de monumentos repetidos según la cantidad de visitas, ordenarlos por cantidad de visitas, de mayor a menor, sin repetidos. 
+\begin{verbatim}
+monumentosTop :: [String] -> [String]
+monumentosTop m = mapReduce (\(x,y) -> [(-y,x)]) (\(x,y) ->  y) (visitasPorMonumento m)
+\end{verbatim}
+
+Ejemplo:
+\begin{verbatim}
+monumentosTop [ "Obelisco", "Obelisco", "Cid", "San Martin", "San Martin", "San Martin", 
+"Obelisco", "Obelisco"]
+--> ["Obelisco", "San Martin", "Cid"]
+\end{verbatim}
+
+
+\subsection{Ejercicio 13}
+Indica la cantidad de monumentos existentes para cada país que tenga.
+\begin{verbatim}
+monumentosPorPais :: [(Structure, Dict String String)] -> [(String, Int)]
+monumentosPorPais s = mapReduce (\(s,d) -> 
+[(d ! "country", initNumber s)]) (\(x,y) -> if sum y /= 0 then [(x,sum y)] else []) s
+
+initNumber :: Structure -> Int
+initNumber Monument = 1
+initNumber Street = 0
+initNumber City = 0
+\end{verbatim}
+
+Ejemplo:
+\begin{verbatim}
+
+monumentosPorPais [ (Monument, [("Antiguedad","muchos años"),("name","Catedral de Leon"),
+				("country", "España")]), \\
+	  (Monument, [("name","Cristo-Rei de Almada"),("Renovacion", "ninguna"),("country", "Portugal")]), \\
+	  (Monument, [("name", "Monasterio de Piedra"),("country", "España")]), \\
+	  (Monument, [("name", "Iglesia de San Francisco"),("country", "Argentina")]), \\
+	  (Street, [("name", "Corrientes"),("country", "Argentina")]), \\
+	  (City, [("name", "Berlina"),("country", "Alemania"),("habitantes", "Dos millones")]), \\
+	  (Street, [("name", "Armenia"),("country", "Argentina"),("Barrio", "Palermo")])] \\
+--> [("Argentina",1),("España",2),("Portugal",1)]
+
+\end{verbatim}
+\end{document}

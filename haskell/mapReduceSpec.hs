@@ -51,7 +51,8 @@ main = hspec $ do
                                                                                                                  ("Chevrolet",["Spark","Corsa"])]
       groupByKey [("fruta", "Banana"), ("carne", "Picada"), ("verdura", "Espinaca")]          `shouldMatchList` [("fruta", ["Banana"]), ("carne", ["Picada"]),
                                                                                                                  ("verdura", ["Espinaca"])]
-
+	it "une dos diccionarios utilizando la función que recibe" $ do
+		unionWith (*) [("Algodon", 20), ("Azucar", 10)]  [("Miel", 5),("Algodon", 5)] `shouldMatchList` [("Algodon", 100), ("Azucar", 10),("Miel", 5)]
 
     it "divide la carga de manera balanceada entre una cantidad determinada de máquinas en algún orden" $ do
       distributionProcess 5 ["A", "B", "C", "D", "E", "F", "G", "H"]  `shouldMatchList` [["A", "F"], ["B", "G"], ["C", "H"], ["D"], ["E"]]
