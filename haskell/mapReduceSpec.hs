@@ -51,8 +51,10 @@ main = hspec $ do
                                                                                                                  ("Chevrolet",["Spark","Corsa"])]
       groupByKey [("fruta", "Banana"), ("carne", "Picada"), ("verdura", "Espinaca")]          `shouldMatchList` [("fruta", ["Banana"]), ("carne", ["Picada"]),
                                                                                                                  ("verdura", ["Espinaca"])]
-	it "une dos diccionarios utilizando la función que recibe" $ do
-		unionWith (*) [("Algodon", 20), ("Azucar", 10)]  [("Miel", 5),("Algodon", 5)] `shouldMatchList` [("Algodon", 100), ("Azucar", 10),("Miel", 5)]
+    it "une dos diccionarios utilizando la función que recibe" $ do
+      unionWith (*) [("Algodon", 20), ("Azucar", 10)]  []                           `shouldMatchList` [("Algodon", 20), ("Azucar", 10)]
+      unionWith (*) [("Algodon", 20), ("Azucar", 10)]  [("Miel", 5),("Algodon", 5)] `shouldMatchList` [("Algodon", 100), ("Azucar", 10),("Miel", 5)]
+      unionWith (+) [("Algodon", 20), ("Azucar", 10)]  [("Miel", 5),("Algodon", 5)] `shouldMatchList` [("Algodon", 25), ("Azucar", 10),("Miel", 5)]
 
     it "divide la carga de manera balanceada entre una cantidad determinada de máquinas en algún orden" $ do
       distributionProcess 5 ["A", "B", "C", "D", "E", "F", "G", "H"]  `shouldMatchList` [["A", "F"], ["B", "G"], ["C", "H"], ["D"], ["E"]]
@@ -125,5 +127,4 @@ main = hspec $ do
                           (Street, [("name", "Corrientes"),("country", "Argentina")]),
                           (City, [("name", "Berlina"),("country", "Alemania"),("habitantes", "Dos millones")]),
                           (Street, [("name", "Armenia"),("country", "Argentina"),("Barrio", "Palermo")])] 
-
-                                                                                `shouldMatchList` [("Argentina",1),("España",2),("Portugal",1)]
+                                                                                  `shouldMatchList` [("Argentina",1),("España",2),("Portugal",1)]
