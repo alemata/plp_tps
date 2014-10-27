@@ -1,6 +1,6 @@
 %Autómatas de ejemplo. Si agregan otros,  mejor.
 
-ejemplo(0, a(s1, [sf], [(s1, a, s1), (s1, b, s1)])).
+ejemplo(0, a(s1, [s1], [(s1, a, s1), (s1, b, s1)])).
 ejemplo(1, a(s1, [sf], [(s1, a, sf)])).
 ejemplo(2, a(si, [si], [(si, a, si)])).
 ejemplo(3, a(si, [si], [])).
@@ -10,7 +10,7 @@ ejemplo(6, a(s1, [s3], [(s1, b, s2), (s3, n, s2), (s2, a, s3)])).
 ejemplo(7, a(s1, [s2], [(s1, a, s3), (s3, a, s3), (s3, b, s2), (s2, b, s2)])).
 ejemplo(8, a(s1, [sf], [(s1, a, s2), (s2, a, s3), (s2, b, s3), (s3, a, s1), (s3, b, s2), (s3, b, s4), (s4, f, sf)])). % No deterministico :)
 ejemplo(9, a(s1, [s1], [(s1, a, s2), (s2, b, s1)])).
-ejemplo(10, a(s1, [s10, s11,s28], 
+ejemplo(10, a(s1, [s10, s11], 
         [(s2, a, s3), (s4, a, s5), (s9, a, s10), (s5, d, s6), (s7, g, s8), (s15, g, s11), (s6, i, s7), (s13, l, s14), (s8, m, s9), (s12, o, s13), (s14, o, s15), (s1, p, s2), (s3, r, s4), (s2, r, s12), (s10, s, s11)])).
 
 ejemploMalo(1, a(s1, [s2], [(s1, a, s1), (s1, b, s2), (s2, b, s2), (s2, a, s3)])). %s3 es un estado sin salida.
@@ -133,7 +133,20 @@ alcanzable(A, E) :- inicialDe(A, Si),
 					caminoDeLongitud(A, X, _, _, Si, E), !.
 
 % 7) automataValido(+Automata)
-automataValido(_).
+automataValido(A) :- estados(A, Estados), finalesDe(A, Finales), subtract(Estados, Finales, EstadosNoFinales), 
+						inicialDe(A, Inicial), subtract(Estados, [Inicial], EstadosNoIniciales), transicionesDe(A, Ts),
+						todosTienenTransicionesSalientes(EstadosNoFinales, Ts), 
+						todosAlcanzables(A, EstadosNoIniciales), 
+						hayEstadoFinal(Finales), 
+						noHayFinalesRepetidos(Finales),
+						noHayTransicionesRep(Ts).
+
+todosTienenTransicionesSalientes(Es, Ts) :- forall(member(E,Es), member((E, _, _), Ts)).
+todosAlcanzables(A, Es) :- forall(member(E, Es), alcanzable(A,E)). 
+hayEstadoFinal(Fs) :- length(Fs, N), N > 0.
+noHayFinalesRepetidos(Fs) :- sacarDup(Fs, FsSinDup), length(Fs, N), length(FsSinDup, N).
+noHayTransicionesRep(Ts) :- sacarDup(Ts, TsSinDup), length(Ts, N), length(TsSinDup, N).
+
 
 %--- NOTA: De acá en adelante se asume que los autómatas son válidos.
 
