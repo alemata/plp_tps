@@ -152,7 +152,9 @@ noHayTransicionesRep(Ts) :- sacarDup(Ts, TsSinDup), length(Ts, N), length(TsSinD
 
 
 % 8) hayCiclo(+Automata)
-hayCiclo(_).
+hayCiclo(A) :- estados(A, Es), length(Es, M), P is M + 1, member(E, Es),
+				between(2, P, N), caminoDeLongitud(A, N, _, _, E, E), !.
+
 
 % 9) reconoce(+Automata, ?Palabra)
 reconoce(_, _).
@@ -181,4 +183,5 @@ test(12) :- ejemplo(8, A),  findall(P, palabraMasCorta(A, P), Lista), length(Lis
 test(13) :- ejemplo(10, A),  findall(P, palabraMasCorta(A, P), [[p, r, o, l, o, g]]).
 test(14) :- forall(member(X, [2, 4, 5, 6, 7, 8, 9]), (ejemplo(X, A), hayCiclo(A))).
 test(15) :- not((member(X, [1, 3, 10]), ejemplo(X, A), hayCiclo(A))).
+
 tests :- forall(between(1, 15, N), test(N)). %IMPORTANTE: Actualizar la cantidad total de tests para contemplar los que agreguen ustedes.
