@@ -13,6 +13,10 @@ ejemplo(9, a(s1, [s1], [(s1, a, s2), (s2, b, s1)])).
 ejemplo(10, a(s1, [s10, s11], 
         [(s2, a, s3), (s4, a, s5), (s9, a, s10), (s5, d, s6), (s7, g, s8), (s15, g, s11), (s6, i, s7), (s13, l, s14), (s8, m, s9), (s12, o, s13), (s14, o, s15), (s1, p, s2), (s3, r, s4), (s2, r, s12), (s10, s, s11)])).
 
+ejemplo(11, a(s1, [s3,s4,s5], 
+        [(s2, a, s3), (s4, a, s5), (s1, p, s2), (s3, r, s4)])).
+
+
 ejemploMalo(1, a(s1, [s2], [(s1, a, s1), (s1, b, s2), (s2, b, s2), (s2, a, s3)])). %s3 es un estado sin salida.
 ejemploMalo(2, a(s1, [sf], [(s1, a, s1), (sf, b, sf)])). %sf no es alcanzable.
 ejemploMalo(3, a(s1, [s2, s3], [(s1, a, s3), (s1, b, s3)])). %s2 no es alcanzable.
@@ -157,7 +161,13 @@ hayCiclo(A) :- estados(A, Es), length(Es, M), P is M + 1, member(E, Es),
 
 
 % 9) reconoce(+Automata, ?Palabra)
-reconoce(_, _).
+reconoce(A, P) :- nonvar(P), length(P,N), inicialDe(A,Si), finalesDe(A,Sfs), 
+					member(Sf,Sfs), Nm1 is N+1, caminoDeLongitud(A,Nm1,_,TmpP,Si,Sf), igualdad(P,TmpP).
+reconoce(A, P) :- var(P), inicialDe(A,Si), finalesDe(A,Sfs), 
+					member(Sf,Sfs), transicionesDe(A,T), length(T,N), Nm1 is N+1, between(2, Nm1, Tam), caminoDeLongitud(A,Tam,_,P,Si,Sf).
+
+igualdad([],[]).
+igualdad([L1|P], [L1|TmpP]) :- igualdad(P,TmpP).
 
 % 10) PalabraMásCorta(+Automata, ?Palabra)
 palabraMasCorta(_, _).
