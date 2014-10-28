@@ -172,7 +172,14 @@ reconoce(A, P) :- var(P), hayCiclo(A), inicialDe(A,Si), finalesDe(A,Sfs),
 					desde(2, N), member(Sf,Sfs), caminoDeLongitud(A,N,_,P,Si,Sf).
 
 % 10) PalabraMásCorta(+Automata, ?Palabra)
-palabraMasCorta(_, _).
+palabraMasCorta(A, P) :- not(hayCiclo(A)), reconoce(A, P), length(P, N), not(hayUnaMasCorta(A, N)).
+palabraMasCorta(A, P) :- estados(A, Es), length(Es, M), 
+							hayCiclo(A), reconoce(A, P), length(P, N), N =< M, not(hayUnaMasCorta(A, N)).
+
+
+hayUnaMasCorta(A, N) :- not(hayCiclo(A)), reconoce(A, P) , length(P, N2),  N2 < N. 
+hayUnaMasCorta(A, N) :- estados(A, Es), length(Es, M), 
+						hayCiclo(A), reconoce(A, P), length(P, N2), N2 =< M, !, N2 < N. 
 
 %-----------------
 %----- Tests -----
