@@ -45,7 +45,7 @@ esDeterministico(Automata):-
   E1 = E2,
   !,
   fail.
-esDeterministico(Automata).
+esDeterministico(_Automata).
 
 
 % 2) estados(+Automata, ?Estados)
@@ -56,7 +56,7 @@ estados(Automata, Estados):-
   \+member(X, Estados),
   !,
   fail.
-estados(Automata, Estados):-
+estados(_Automata, Estados):-
   nonvar(Estados),!.
 estados(Automata, Estados):-
   var(Estados),
@@ -76,12 +76,12 @@ todosLosNodos(Automata, Nodos):-
 % Nodos = nodos de las transiciones.
 % nodos(+Transiciones, -Nodos)
 nodos([], []).
-nodos([(X,Y,W)|T], [X,W|Nodos]):-
+nodos([(X,_,W)|T], [X,W|Nodos]):-
 
   nodos(T, Nodos).
 
 
-esCamino(Automata, EstadoInicial, EstadoFinal, [X]):-
+esCamino(_Automata, EstadoInicial, EstadoFinal, [X]):-
   EstadoInicial = X,
   EstadoFinal = X, !.
   % feo para mi (mismo pattern matching)... mejor poner un if...
@@ -117,23 +117,24 @@ caminoDeLongitud(Automata, N, Camino, Etiquetas, S1, S2):-
   estados(Automata, FL),
   member(S1, FL),
   member(S2, FL),
-  posiblesCaminos(Automata, N, Camino),
+  posiblesCaminos(Automata, S1, N, Camino),
   esCamino(Automata, S1, S2, Camino),
   etiquetasCamino(Automata, Camino, Etiquetas).
 
-posiblesCaminos(Automata,0, []).
-posiblesCaminos(Automata,N, [X,Y|C2]):-
-  N2 is N - 2,
-  length(C2, N2),
-  estados(Automata, FL),
-  member(X,FL),
-  transicionesDe(Automata, T),
-  member((X,_,Y), T),
-  posiblesCaminos(Automata,N2,C2).
 
-etiquetasCamino(Automata, [X], []).
+posiblesCaminos(_Automata, SI, 0, [SI]):- !.
+posiblesCaminos(Automata, SI, 2, [SI,SF]):-
+  !,
+  transicionesDe(Automata, T),
+  member((SI,_,SF), T).
+posiblesCaminos(Automata, SI, N, [SI|C2]):-
+  N2 is N - 1,
+  transicionesDe(Automata, T),
+  member((SI,_,Y), T),
+  posiblesCaminos(Automata, Y, N2, C2).
+
+etiquetasCamino(_Automata, [_X], []).
 etiquetasCamino(Automata, [X,Y|Rest], [E|RE]):-
-  length([X,Y|Rest], N),
   transicionesDe(Automata, T),
   member((X,E,Y), T ),
   etiquetasCamino(Automata, [Y|Rest], RE).
@@ -145,7 +146,7 @@ alcanzable(Automata, Estado):-
   estados(Automata, Estados),
   length(Estados, L),
   between(2, L, X),
-  caminoDeLongitud(Automata, X, Camino, Etiquetas, EstadoInicial, Estado),
+  caminoDeLongitud(Automata, X, _Camino, _Etiquetas, EstadoInicial, Estado),
   !.
 
 % 7) automataValido(+Automata)
