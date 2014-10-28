@@ -44,9 +44,9 @@ desde(X, Y):-desde(X, Z),  Y is Z + 1.
 
 %%-------------------
 %%-------------------
-divides(X, Y) :- Y mod X =:= 0.
+%divides(X, Y) :- Y mod X =:= 0.
 
-hola(L1, L2) :- include(divides(2), L1, L2).
+%hola(L1, L2) :- include(divides(2), L1, L2).
 %%-------------------
 %%-------------------
 
@@ -84,7 +84,7 @@ sacarDup([X|L],L2) :- member(X,L), sacarDup(L,L2).
 sacarDup([X|L],[X|L2]) :- not(member(X,L)), sacarDup(L,L2).
 
 sameList([],[]).
-sameList([X|Xs],[Y|Ys]) :- X == Y, sameList(Xs,Ys).
+sameList([X|Xs],[X|Ys]) :- sameList(Xs,Ys).
 
 origenesYEtiquetasDe([],[]).
 origenesYEtiquetasDe([(X,E,_)|T],[(X,E)|Ts]) :- origenesYEtiquetasDe(T,Ts).
@@ -146,8 +146,11 @@ automataValido(A) :- estados(A, Estados), finalesDe(A, Finales), subtract(Estado
 						noHayTransicionesRep(Ts).
 
 todosTienenTransicionesSalientes(Es, Ts) :- forall(member(E,Es), member((E, _, _), Ts)).
+
 todosAlcanzables(A, Es) :- forall(member(E, Es), alcanzable(A,E)). 
+
 hayEstadoFinal(Fs) :- length(Fs, N), N > 0.
+
 noHayFinalesRepetidos(Fs) :- sacarDup(Fs, FsSinDup), length(Fs, N), length(FsSinDup, N).
 noHayTransicionesRep(Ts) :- sacarDup(Ts, TsSinDup), length(Ts, N), length(TsSinDup, N).
 
@@ -162,12 +165,11 @@ hayCiclo(A) :- estados(A, Es), length(Es, M), P is M + 1, member(E, Es),
 
 % 9) reconoce(+Automata, ?Palabra)
 reconoce(A, P) :- nonvar(P), length(P,N), inicialDe(A,Si), finalesDe(A,Sfs), 
-					member(Sf,Sfs), Nm1 is N+1, caminoDeLongitud(A,Nm1,_,TmpP,Si,Sf), igualdad(P,TmpP).
-reconoce(A, P) :- var(P), inicialDe(A,Si), finalesDe(A,Sfs), 
+					member(Sf,Sfs), Nm1 is N+1, caminoDeLongitud(A,Nm1,_,TmpP,Si,Sf), sameList(P,TmpP).
+reconoce(A, P) :- var(P), not(hayCiclo(A)), inicialDe(A,Si), finalesDe(A,Sfs), 
 					member(Sf,Sfs), transicionesDe(A,T), length(T,N), Nm1 is N+1, between(2, Nm1, Tam), caminoDeLongitud(A,Tam,_,P,Si,Sf).
-
-igualdad([],[]).
-igualdad([L1|P], [L1|TmpP]) :- igualdad(P,TmpP).
+reconoce(A, P) :- var(P), hayCiclo(A), inicialDe(A,Si), finalesDe(A,Sfs), 
+					desde(2, N), member(Sf,Sfs), caminoDeLongitud(A,N,_,P,Si,Sf).
 
 % 10) PalabraMásCorta(+Automata, ?Palabra)
 palabraMasCorta(_, _).
