@@ -32,6 +32,11 @@ transicionesDe(a(_, _, T), T).
 desde(X, X).
 desde(X, Y):-desde(X, Z),  Y is Z + 1.
 
+%sacarDup(+Lista, -ListaSinDuplicados).
+sacarDup([],[]).
+sacarDup([X|L],L2) :- member(X,L), sacarDup(L,L2).
+sacarDup([X|L],[X|L2]) :- not(member(X,L)), sacarDup(L,L2).
+
 
 %%Predicados pedidos.
 
@@ -149,14 +154,48 @@ alcanzable(Automata, Estado):-
   caminoDeLongitud(Automata, X, _Camino, _Etiquetas, EstadoInicial, Estado),
   !.
 
+
 % 7) automataValido(+Automata)
-automataValido(_).
+automataValido(Automata):- 
+  estados(Automata, Estados), 
+  finalesDe(Automata, Finales), 
+  subtract(Estados, Finales, EstadosNoFinales), 
+  inicialDe(Automata, Inicial), 
+  subtract(Estados, [Inicial], EstadosNoIniciales), 
+  transicionesDe(Automata, Ts),
+  todosTienenTransicionesSalientes(EstadosNoFinales, Ts), 
+  todosAlcanzables(Automata, EstadosNoIniciales), 
+  hayEstadoFinal(Finales), 
+  noHayFinalesRepetidos(Finales),
+  noHayTransicionesRep(Ts).
+
+todosTienenTransicionesSalientes(Estados, Ts):- 
+  forall(member(Estado,Estados), member((Estado, _, _), Ts)).
+
+todosAlcanzables(Automata, Estados):- 
+  forall(member(Estado, Estados), alcanzable(Automata, Estado)). 
+
+hayEstadoFinal(Finales):- 
+  length(Finales, N), N > 0.
+
+noHayFinalesRepetidos(Finales):- 
+  sacarDup(Finales, FsSinDup), length(Finales, N), length(FsSinDup, N).
+
+noHayTransicionesRep(Ts):- 
+  sacarDup(Ts, TsSinDup), length(Ts, N), length(TsSinDup, N).
 
 %--- NOTA: De acá en adelante se asume que los autómatas son válidos.
 
 
 % 8) hayCiclo(+Automata)
-hayCiclo(_).
+hayCiclo(Automata):- 
+  estados(Automata, Estados), 
+  length(Estados, M), 
+  P is M + 1, 
+  member(Estado, Estados),
+  between(2, P, N), 
+  caminoDeLongitud(Automata, N, _Camino, _Etiquetas, Estado, Estado), 
+  !.
 
 % 9) reconoce(+Automata, ?Palabra)
 reconoce(_, _).
