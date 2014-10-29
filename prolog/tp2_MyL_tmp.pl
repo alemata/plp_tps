@@ -13,9 +13,7 @@ ejemplo(9, a(s1, [s1], [(s1, a, s2), (s2, b, s1)])).
 ejemplo(10, a(s1, [s10, s11], 
         [(s2, a, s3), (s4, a, s5), (s9, a, s10), (s5, d, s6), (s7, g, s8), (s15, g, s11), (s6, i, s7), (s13, l, s14), (s8, m, s9), (s12, o, s13), (s14, o, s15), (s1, p, s2), (s3, r, s4), (s2, r, s12), (s10, s, s11)])).
 
-ejemplo(11, a(s1, [s3,s4,s5], 
-        [(s2, a, s3), (s4, a, s5), (s1, p, s2), (s3, r, s4)])).
-
+ejemplo(11, a(s1, [s4], [(s1,a,s2),(s1,a,s3),(s2,b,s4),(s3,b,s4)])).
 
 ejemploMalo(1, a(s1, [s2], [(s1, a, s1), (s1, b, s2), (s2, b, s2), (s2, a, s3)])). %s3 es un estado sin salida.
 ejemploMalo(2, a(s1, [sf], [(s1, a, s1), (sf, b, sf)])). %sf no es alcanzable.
@@ -121,10 +119,10 @@ estanEn([X,Y|L1], L2) :- member((X,_,Y), L2), estanEn([Y|L1], L2).
 
 % 5) caminoDeLongitud(+Automata, +N, -Camino, -Etiquetas, ?S1, ?S2)
 %% USAMOS GENERATE & TEST.
-caminoDeLongitud(A, N, C, Tags, Si, Sf) :- estados(A, Es), member(Si, Es), member(Sf, Es), transicionesDe(A,T), 
+caminoDeLongitud(A, 1, [Si], [], Si, Si) :- !, estados(A, Es), member(Si, Es). 			%pongo el cut porque así no tengo que agregar en el otro que el N debe ser mayor a uno
+caminoDeLongitud(A, N, C, Tags, Si, Sf):- estados(A, Es), member(Si, Es), member(Sf, Es), transicionesDe(A,T), 
 											Nm1 is N-1, crearCamino(Si, Sf, T, C, Nm1), etiquetasCamino(T,C,Tags).
 
-crearCamino(Si, _, _, [Si], 0):- !.
 crearCamino(X, Sf, T, [X,Sf], 1) :- !, member((X,_,Sf),T).
 crearCamino(X, Sf, T, [X|C], N) :- Nm1 is N-1, member((X,_,Y),T), crearCamino(Y, Sf, T, C, Nm1). 
 
@@ -172,14 +170,27 @@ reconoce(A, P) :- var(P), hayCiclo(A), inicialDe(A,Si), finalesDe(A,Sfs),
 					desde(2, N), member(Sf,Sfs), caminoDeLongitud(A,N,_,P,Si,Sf).
 
 % 10) PalabraMásCorta(+Automata, ?Palabra)
-palabraMasCorta(A, P) :- not(hayCiclo(A)), reconoce(A, P), length(P, N), not(hayUnaMasCorta(A, N)).
-palabraMasCorta(A, P) :- estados(A, Es), length(Es, M), 
-							hayCiclo(A), reconoce(A, P), length(P, N), N =< M, not(hayUnaMasCorta(A, N)).
+palabraMasCorta(A, Palabra) :- nonvar(Palabra), reconoce(A,Palabra),  
+								transicionesDe(A,T), length(T,N), Nm1 is N+1, inicialDe(A,Si), finalesDe(A,Sfs), 
+								between(2,Nm1,Tam), member(Sf,Sfs), caminoDeLongitud(A,Tam,_,E,Si,Sf), !, 
+								length(E,TamE), length(Palabra,TamPal), TamE = TamPal.
+palabraMasCorta(A, Palabra) :- var(Palabra), transicionesDe(A,T), length(T,N), Nm1 is N+1, inicialDe(A,Si), finalesDe(A,Sfs), 
+							between(2,Nm1,Tam), member(Sf,Sfs), caminoDeLongitud(A,Tam,_,_,Si,Sf), !, caminos(A, Tam, Palabra).
+
+caminos(A, N, P) :- esDeterministico(A), inicialDe(A,Si), finalesDe(A,Sfs), member(Sf,Sfs), caminoDeLongitud(A,N,_,P,Si,Sf).
+caminos(A, N, P) :- not(esDeterministico(A)), caminosARepensar(A, N, P). 	%habria que generar todas las palabras de esa 
+																			%longitud pero eliminar las que se repiten, con un cut 
+																			%estoy casi segura que no va.
+
+%palabraMasCorta(A, P) :- not(hayCiclo(A)), reconoce(A, P), length(P, N), not(hayUnaMasCorta(A, N)).
+%palabraMasCorta(A, P) :- estados(A, Es), length(Es, M), 
+%							hayCiclo(A), reconoce(A, P), length(P, N), N =< M, not(hayUnaMasCorta(A, N)).
 
 
-hayUnaMasCorta(A, N) :- not(hayCiclo(A)), reconoce(A, P) , length(P, N2),  N2 < N. 
-hayUnaMasCorta(A, N) :- estados(A, Es), length(Es, M), 
-						hayCiclo(A), reconoce(A, P), length(P, N2), N2 =< M, !, N2 < N. 
+%hayUnaMasCorta(A, N) :- not(hayCiclo(A)), reconoce(A, P) , length(P, N2),  N2 < N. 
+%hayUnaMasCorta(A, N) :- estados(A, Es), length(Es, M), 
+%						hayCiclo(A), reconoce(A, P), length(P, N2), N2 =< M, !, N2 < N. 
+
 
 %-----------------
 %----- Tests -----
