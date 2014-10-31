@@ -170,6 +170,7 @@ reconoce(A, P) :- var(P), hayCiclo(A), inicialDe(A,Si), finalesDe(A,Sfs),
 					desde(2, N), member(Sf,Sfs), caminoDeLongitud(A,N,_,P,Si,Sf).
 
 % 10) PalabraMásCorta(+Automata, ?Palabra)
+
 palabraMasCorta(A, Palabra) :- nonvar(Palabra), reconoce(A,Palabra),  
 								transicionesDe(A,T), length(T,N), Nm1 is N+1, inicialDe(A,Si), finalesDe(A,Sfs), 
 								between(2,Nm1,Tam), member(Sf,Sfs), caminoDeLongitud(A,Tam,_,E,Si,Sf), !, 
@@ -182,14 +183,24 @@ caminos(A, N, P) :- not(esDeterministico(A)), caminosARepensar(A, N, P). 	%habri
 																			%longitud pero eliminar las que se repiten, con un cut 
 																			%estoy casi segura que no va.
 
-%palabraMasCorta(A, P) :- not(hayCiclo(A)), reconoce(A, P), length(P, N), not(hayUnaMasCorta(A, N)).
-%palabraMasCorta(A, P) :- estados(A, Es), length(Es, M), 
-%							hayCiclo(A), reconoce(A, P), length(P, N), N =< M, not(hayUnaMasCorta(A, N)).
+
+%hayUnaMasCorta(A, N) :- not(hayCiclo(A)), reconoce(A, P) , length(P, N2),  N2 < N. 
+%hayUnaMasCorta(A, N) :- estados(A, Es), length(Es, M), 
+%						hayCiclo(A), reconoce(A, P), length(P, N2), N2 =< M, !, N2 < N. 
+
+palabraMasCorta(A, P) :- not(hayCiclo(A)), reconoce(A, P), length(P, N), not(hayUnaMasCorta(A, N)).
+palabraMasCorta(A, P) :- hayCiclo(A), desde(1,N), reconoceAcotado(A, P, N), not(hayUnaMasCorta(A, N)).
 
 
 %hayUnaMasCorta(A, N) :- not(hayCiclo(A)), reconoce(A, P) , length(P, N2),  N2 < N. 
 %hayUnaMasCorta(A, N) :- estados(A, Es), length(Es, M), 
 %						hayCiclo(A), reconoce(A, P), length(P, N2), N2 =< M, !, N2 < N. 
+
+hayUnaMasCorta(A, N) :- not(hayCiclo(A)), reconoce(A, P) , length(P, N2),  N2 < N. 
+hayUnaMasCorta(A, N) :- hayCiclo(A), desde(1,N2), reconoceAcotado(A, P, N2), N2 < N. 
+
+
+reconoceAcotado(A, P, N) :- N > 0, length(P, N), reconoce(A, P).
 
 
 %-----------------
