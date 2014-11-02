@@ -4,15 +4,18 @@ ejemplo(1, a(s1, [sf], [(s1, a, sf)])).
 ejemplo(2, a(si, [si], [(si, a, si)])).
 ejemplo(3, a(si, [si], [])).
 ejemplo(4, a(s1, [s2, s3], [(s1, a, s1), (s1, a, s2), (s1, b, s3)])).
-ejemplo(5, a(s1, [s2, s3], [(s1, a, s1), (s1, b, s2), (s1, c, s3), (s2, c, s3)])).
+ejemplo(5, a(s1, [s2, s3], [(s1, a, s1), (s1, b, s2), (s1, c, s3), (s2, c, s3)])). 
 ejemplo(6, a(s1, [s3], [(s1, b, s2), (s3, n, s2), (s2, a, s3)])).
 ejemplo(7, a(s1, [s2], [(s1, a, s3), (s3, a, s3), (s3, b, s2), (s2, b, s2)])).
-
 ejemplo(8, a(s1, [sf], [(s1, a, s2), (s2, a, s3), (s2, b, s3), (s3, a, s1), (s3, b, s2), (s3, b, s4), (s4, f, sf)])). % No deterministico :)
-
 ejemplo(9, a(s1, [s1], [(s1, a, s2), (s2, b, s1)])).
 ejemplo(10, a(s1, [s10, s11], 
         [(s2, a, s3), (s4, a, s5), (s9, a, s10), (s5, d, s6), (s7, g, s8), (s15, g, s11), (s6, i, s7), (s13, l, s14), (s8, m, s9), (s12, o, s13), (s14, o, s15), (s1, p, s2), (s3, r, s4), (s2, r, s12), (s10, s, s11)])).
+%Nuevos ejemplos
+ejemplo(11, a(s1,[sf],[(s1,t,s2),(s1,l,s2),(s2,a,s3),(s3,s,sf),(s2,o,s4),(s4,c,s5),(s4,k,s5),(s5,o,sf)])). 
+ejemplo(12, a(s1,[sf],[(s1,a1,s2),(s1,a1,s3),(s2,a2,sf),(s3,a2,sf)])). 
+ejemplo(13, a(si, [sf,s3], [(si,a,s1),(s1,a,s11),(s11,b,s10),(s10,c,sf),(si,p,s3)])).
+ejemplo(14, a(si, [si], [(si,c,s1),(s1,i,s2),(s2,c,s3),(s3,l,s4),(s4,o,si)])).
 
 ejemploMalo(1, a(s1, [s2], [(s1, a, s1), (s1, b, s2), (s2, b, s2), (s2, a, s3)])). %s3 es un estado sin salida.
 ejemploMalo(2, a(s1, [sf], [(s1, a, s1), (sf, b, sf)])). %sf no es alcanzable.
@@ -21,6 +24,13 @@ ejemploMalo(4, a(s1, [s3], [(s1, a, s3), (s2, b, s3)])). %s2 no es alcanzable.
 ejemploMalo(5, a(s1, [s3, s2, s3], [(s1, a, s2), (s2, b, s3)])). %Tiene un estado final repetido.
 ejemploMalo(6, a(s1, [s3], [(s1, a, s2), (s2, b, s3), (s1, a, s2)])). %Tiene una transición repetida.
 ejemploMalo(7, a(s1, [], [(s1, a, s2), (s2, b, s3)])). %No tiene estados finales.
+%Nuevos ejemplos
+ejemploMalo(8, a(si,[s4,s4],[(s1,a,s2),(s3,b,s4)])). %s1, s2 y s3 no son alcanzables y si no tiene transiciones salientes
+ejemploMalo(9, a(si,[],[(si,o,s1),(s1,h,si)])).
+ejemploMalo(10, a(si,[],[(si,a,s1),(s1,h,si),(si,a,s1)])).
+
+
+
 
 %%Proyectores
 inicialDe(a(I, _, _), I).
@@ -87,7 +97,7 @@ esCamino(A, Si, Sf, [Si|C]) :- last(C,Sf2), Sf = Sf2,
 
 %estanEn(-L1, +T)
 estanEn([O,D], L2) :- member((O,_,D), L2), !.
-estanEn([O,D|L1], L2) :- member((O,_,D), L2), estanEn([D|L1], L2). 									
+estanEn([O,D|L1], L2) :- member((O,_,D), L2), !, estanEn([D|L1], L2). 									
 
 
 % 4) ¿el predicado anterior es o no reversible con respecto a Camino y por qué?
@@ -113,9 +123,9 @@ crearCamino(X, Sf, T, [X|C], N, [E|Etiquetas]) :- Nm1 is N-1, member((X,E,Y),T),
 
 % Se utiliza Generate & Test.
 % 6) alcanzable(+Automata, +Estado)
-alcanzable(A, E) :- inicialDe(A, Si), 
-					estados(A,Estados),	length(Estados, N), between(2, N, X),
-					caminoDeLongitud(A, X, _, _, Si, E), !.
+alcanzable(A, E) :- inicialDe(A, Inicial), 
+					estados(A,Estados),	length(Estados, N), Nm1 is N+1, between(2, Nm1, X),
+					caminoDeLongitud(A, X, _, _, Inicial, E), !.
 
 % 7) automataValido(+Automata)
 automataValido(A) :- estados(A, Estados), finalesDe(A, Finales), subtract(Estados, Finales, EstadosNoFinales), 
@@ -207,9 +217,59 @@ test(13) :- ejemplo(10, A),  findall(P, palabraMasCorta(A, P), [[p, r, o, l, o, 
 test(14) :- forall(member(X, [2, 4, 5, 6, 7, 8, 9]), (ejemplo(X, A), hayCiclo(A))).
 test(15) :- not((member(X, [1, 3, 10]), ejemplo(X, A), hayCiclo(A))).
 
-test(16) :- forall(member(X, [1, 2, 3, 5, 6, 7, 9, 10]), (ejemplo(X, A), esDeterministico(A))).
-test(17) :- not((member(X, [4, 8]), ejemplo(X, A), esDeterministico(A))).
 
-tests :- forall(between(1, 17, N), test(N)). %IMPORTANTE: Actualizar la cantidad total de tests para contemplar los que agreguen ustedes.
+%Test para ejercicio 1.
+test(16) :- forall(member(X, [1, 2, 3, 5, 6, 7, 9, 10, 11, 13, 14]), (ejemplo(X, A), esDeterministico(A))).
+test(17) :- not((member(X, [4, 8, 12]), ejemplo(X, A), esDeterministico(A))).
+
+%Test para ejercicio 2.
+test(18) :- ejemplo(11,A), findall(Es, estados(A,Es), [[s1,s2,s3,s4,s5,sf]]).
+test(19) :- ejemplo(12,A), findall(Es, estados(A,Es), [[s1,s2,s3,sf]]).
+test(20) :- not((ejemplo(9,A), estados(A,[s1]))).
+test(21) :- ejemplo(13,A), estados(A,[s1,s10,s11,s3,sf,si]).
+
+%Test para ejercicio 3.
+test(22) :- not((ejemplo(5,A), esCamino(A, s1, s2, [s1,s2,s3,s2]))).
+test(22) :- not((ejemplo(5,A), esCamino(A, s1, s5, [s1,s2,s3,s5]))).
+test(23) :- ejemplo(4,A), esCamino(A, s1, s3, [s1,s1,s1,s1,s1,s1,s3]).
+test(24) :- ejemplo(11,A), findall(X, esCamino(A, s1, X, [s1,s2,s3,sf]), [(sf)]).
+test(25) :- ejemplo(5,A), findall(X, esCamino(A, X, s2, [s1,s1,s2]), [(s1)]).
+test(26) :- ejemplo(5,A), findall(X, esCamino(A, X, s3, [s1,s1,s2]), []).
+
+%Test para ejercicio 5.
+%test(NUMERO) :- ejemplo(4,A), estados(A,Es), caminoDeLongitud(A, 1, Camino, Etiquetas, Si, Sf), member(Si, Es), Sf is Si, Camino = [Si], lenght(Etiquetas,0).
+%ejemplo(4, a(s1, [s2, s3], [(s1, a, s1), (s1, a, s2), (s1, b, s3)])).
+
+test(27) :- ejemplo(8,A), findall(Camino, caminoDeLongitud(A,5,Camino,_,s3,s1), [[s3,s1,s2,s3,s1],[s3,s1,s2,s3,s1]]),
+			findall(Etiquetas, caminoDeLongitud(A,5,_,Etiquetas,s3,s1), [[a,a,a,a],[a,a,b,a]]).
+test(28) :- not((ejemplo(9,A), caminoDeLongitud(A,5,_,_,s1,s2))).
+test(29) :- not((ejemplo(12,A), caminoDeLongitud(A,3,_,_,s2,s3))).
 
 
+%Test para ejercicio 6.
+test(30) :- ejemplo(2,A), alcanzable(A,si).
+test(31) :- ejemplo(11,A), alcanzable(A,s5).
+test(32) :- ejemplo(10,A), alcanzable(A,s7).
+test(33) :- not((ejemploMalo(2,A), alcanzable(A,sf))).
+test(34) :- not((ejemploMalo(3,A), alcanzable(A,s2))).
+test(35) :- not((ejemploMalo(4,A), alcanzable(A,s2))).
+
+%Test para ejercicio 7.
+%No agrego nuevos, ya que el dado por la cátedra verifica todos los ejemplos, y como ya creamos nuevos...
+
+%Test para ejercicio 8.
+test(36) :- ejemplo(14, A), hayCiclo(A).
+test(37) :- not((member(X, [11, 12, 13]), ejemplo(X, A), hayCiclo(A))).
+
+%Test para ejercicio 9.
+test(38) :- ejemplo(14,A), reconoce(A, [c,i,c,l,o,c,i,c,l,o]).
+test(39) :- not((ejemplo(14,A), reconoce(A, [c,i,c,l,o,c,i,c,l,o,c,i]))).
+test(40) :- ejemplo(11,A), findall(Palabra, reconoce(A,Palabra), [[t,a,s],[l,a,s],[t,o,c,o],[t,o,k,o],[l,o,c,o],[l,o,k,o]]).
+test(41) :- ejemplo(11,A), reconoce(A, [l,o,X,o]), member([X],[[k],[c]]). %¿Como escribo que el X es igual a k o a c?
+
+%Test para ejercicio 10.
+
+tests :- forall(between(1, 41, N), test(N)). %IMPORTANTE: Actualizar la cantidad total de tests para contemplar los que agreguen ustedes.
+
+
+%ejemplo(11, a(s1,[],[(),(),(),(),()])) 
