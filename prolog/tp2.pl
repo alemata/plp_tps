@@ -313,8 +313,13 @@ test(40) :- ejemplo(11,A), findall(Palabra, reconoce(A,Palabra), [[t,a,s],[l,a,s
 test(41) :- ejemplo(11,A), reconoce(A, [l,o,X,o]), member([X],[[k],[c]]). %¿Como escribo que el X es igual a k o a c?
 
 %Test para ejercicio 10.
+test(42):- ejemplo(11,A), palabraMasCorta(A,[t,a,s]).
+test(43):- not((ejemplo(14,A), palabraMasCorta(A,[c,i,c,l,o,c,i,c,l,o]))). 
+test(44):- ejemplo(11,A), findall(Palabra, palabraMasCorta(A,Palabra), [[t,a,s],[l,a,s]]).
+test(45):- ejemplo(10,A), findall(Palabra, palabraMasCorta(A,Palabra), [[p,r,o,l,o,g]]).
 
-tests :- forall(between(1, 41, N), test(N)). %IMPORTANTE: Actualizar la cantidad total de tests para contemplar los que agreguen ustedes.
+
+tests :- forall(between(1, 45, N), test(N)). %IMPORTANTE: Actualizar la cantidad total de tests para contemplar los que agreguen ustedes.
 
 
 %ejemplo(11, a(s1,[],[(),(),(),(),()])) 
