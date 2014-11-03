@@ -84,20 +84,20 @@ noEsDeterministico(Automata) :- transicionesDe(Automata,T),
 % lista generada estén en Estados.
 % 2) estados(+Automata, ?Estados)
 estados(Automata, Estados) :- var(Estados), inicialDe(Automata, Si), 
-				transicionesDe(Automata, Ts), origenesydstAutomata(Ts, ODs),
-				finalesDe(Automata, Fs), append([Si|ODs], Fs, Es), sort(Es, Estados).
+				transicionesDe(Automata, Transiciones), origenesydstAutomata(Transiciones, ODs),
+				finalesDe(Automata, Finales), append([Si|ODs], Finales, EstadosConRepetidos), sort(EstadosConRepetidos, Estados).
 
 estados(Automata, Estados) :- nonvar(Estados), inicialDe(Automata, Si), 
-				transicionesDe(Automata, Ts), origenesydstAutomata(Ts, ODs),
-				finalesDe(Automata, Fs), append([Si|ODs], Fs, Es),
-				forall(member(E, Es), member(E, Estados)).
+				transicionesDe(Automata, Transiciones), origenesydstAutomata(Transiciones, ODs),
+				finalesDe(Automata, Finales), append([Si|ODs], Finales, EstadosConRepetidos),
+				forall(member(E, EstadosConRepetidos), member(E, Estados)).
 
 
 % A partir de las transiciones de un automata, retorna una lista con todos los estados
 % que participan de alguna transición.
 % origenesydstAutomata(+Ts, ?L).
 origenesydstAutomata([], []).
-origenesydstAutomata([(O,_,D)|Ts], [O,D|ODs]) :- origenesydstAutomata(Ts, ODs).
+origenesydstAutomata([(O,_,D)|Transiciones], [O,D|ODs]) :- origenesydstAutomata(Transiciones, ODs).
 
 
 
@@ -108,9 +108,9 @@ origenesydstAutomata([(O,_,D)|Ts], [O,D|ODs]) :- origenesydstAutomata(Ts, ODs).
 % de la lista que representa el camino. Luego, se chequea que dos estados continuos 
 % del caminos formen parte de alguna de las transiciones del autómata. 
 % 3)esCamino(+Automata, ?EstadoInicial, ?EstadoFinal, +Camino)
-esCamino(A, Si, Si, [Si]) :- estados(A, Estados), member(Si, Estados).
-esCamino(A, Si, Sf, [Si|C]) :- last(C,Sf2), Sf = Sf2,
-								transicionesDe(A,T), estanEn([Si|C], T).
+esCamino(Automata, Si, Si, [Si]) :- estados(Automata, Estados), member(Si, Estados).
+esCamino(Automata, Si, Sf, [Si|C]) :- last(C,Sf2), Sf = Sf2,
+								transicionesDe(Automata, Transiciones), estanEn([Si|C], Transiciones).
 
 %estanEn(-L1, +T)
 estanEn([O,D], L2) :- member((O,_,D), L2), !.
@@ -130,59 +130,61 @@ estanEn([O,D|L1], L2) :- member((O,_,D), L2), !, estanEn([D|L1], L2).
 % parte de los estados del automata. Si la longitud del camino es mayor que uno, se crea
 % un camino desde el estado S1 hasta el S2, a partir de las transiciones del autómata.
 % 5) caminoDeLongitud(+Automata, +N, -Camino, -Etiquetas, ?S1, ?S2)
-caminoDeLongitud(A, 1, [Si], [], Si, Si) :- !, estados(A, Es), member(Si, Es). 			
-caminoDeLongitud(A, N, C, Tags, Si, Sf):- N > 1, estados(A, Es), member(Si, Es), member(Sf, Es), transicionesDe(A,T), 
-											Nm1 is N-1, crearCaminoConEtiquetas(Si, Sf, T, C, Nm1, Tags).
+caminoDeLongitud(Automata, 1, [Si], [], Si, Si) :- !, estados(Automata, Estados), member(Si, Estados). 			
+caminoDeLongitud(Automata, N, Camino, Etiquetas, Si, Sf):- N > 1, estados(Automata, Estados), member(Si, Estados), member(Sf, Estados), 
+													transicionesDe(Automata,Transiciones), 
+											Nm1 is N-1, crearCaminoConEtiquetas(Si, Sf, Transiciones, Camino, Nm1, Etiquetas).
 
 
 % Dado dos estados que serán el principio y el final del camino, genera los caminos de
 % tamaño N con sus respectivas etiquetas. 
-%crearCaminoConEtiquetas(?Si, ?Sf, +T, -Camino, +N, -Etiquetas).
-crearCaminoConEtiquetas(X, Sf, T, [X,Sf], 1, [E]) :- !, member((X,E,Sf),T).
-crearCaminoConEtiquetas(X, Sf, T, [X|C], N, [E|Etiquetas]) :- Nm1 is N-1, member((X,E,Y),T), crearCaminoConEtiquetas(Y, Sf, T, C, Nm1, Etiquetas). 
+%crearCaminoConEtiquetas(?Si, ?Sf, +Transiciones, -Camino, +N, -Etiquetas).
+crearCaminoConEtiquetas(X, Sf, Transiciones, [X,Sf], 1, [Etiqueta]) :- !, member((X,Etiqueta,Sf),Transiciones).
+crearCaminoConEtiquetas(X, Sf, Transiciones, [X|C], N, [E|Etiquetas]) :- Nm1 is N-1, member((X,E,Y),Transiciones), 
+													crearCaminoConEtiquetas(Y, Sf, Transiciones, C, Nm1, Etiquetas). 
 
 
 % Se utiliza Generate & Test.
 % Si hay un camino desde el estado inicial hasta el estado dado con alguna longitud 
 % entre 2 y la cantidad de estados más uno, entonces la función da True.
 % 6) alcanzable(+Automata, +Estado)
-alcanzable(A, E) :- inicialDe(A, Inicial), 
-					estados(A,Estados),	length(Estados, N), Nm1 is N+1, between(2, Nm1, X),
-					caminoDeLongitud(A, X, _, _, Inicial, E), !.
+alcanzable(Automata, Estado) :- inicialDe(Automata, Inicial), 
+					estados(Automata,Estados),	length(Estados, N), Nm1 is N+1, between(2, Nm1, M),
+					caminoDeLongitud(Automata, M, _, _, Inicial, Estado), !.
 
 
 % Se seleccionan los estados finales del autómata, los no finales, el inicial, los no iniciales y 
 % sus transiciones. Luego se verifican que se cumplan las condiciones para que un autómata sea
 % válidad. Éstas son explicadas más abajo.
 % 7) automataValido(+Automata)
-automataValido(A) :- estados(A, Estados), finalesDe(A, Finales), subtract(Estados, Finales, EstadosNoFinales), 
-						inicialDe(A, Inicial), subtract(Estados, [Inicial], EstadosNoIniciales), transicionesDe(A, Ts),
-						todosTienenTransicionesSalientes(EstadosNoFinales, Ts), 
-						todosAlcanzables(A, EstadosNoIniciales), 
+automataValido(Automata) :- estados(Automata, Estados), finalesDe(Automata, Finales), subtract(Estados, Finales, EstadosNoFinales), 
+						inicialDe(Automata, Inicial), subtract(Estados, [Inicial], EstadosNoIniciales), transicionesDe(Automata, Transiciones),
+						todosTienenTransicionesSalientes(EstadosNoFinales, Transiciones), 
+						todosAlcanzables(Automata, EstadosNoIniciales), 
 						hayEstadoFinal(Finales), 
 						noHayFinalesRepetidos(Finales),
-						noHayTransicionesRep(Ts).
+						noHayTransicionesRep(Transiciones).
 
 % Verifica que todos los estados tienen transiciones salientes exceptuando los finales, que pueden
 % o no tenerlas.
-%todosTienenTransicionesSalientes(+Estados, +Transiciones)
-todosTienenTransicionesSalientes(Es, Ts) :- forall(member(E,Es), member((E, _, _), Ts)).
+%todosTienenTransicionesSalientes(+EstadosNoFinales, +Transiciones)
+todosTienenTransicionesSalientes(EstadosNoFinales, Transiciones) :- forall(member(Estado,EstadosNoFinales), member((Estado, _, _), Transiciones)).
 
 % Verifica que todos los estados son alcanzables desde el estado inicial.
-%todosAlcanzables(+Automata, +Es)
-todosAlcanzables(A, Es) :- forall(member(E, Es), alcanzable(A,E)). 
+%todosAlcanzables(+Automata, +EstadosNoIniciales)
+todosAlcanzables(Automata, EstadosNoIniciales) :- forall(member(Estado, EstadosNoIniciales), alcanzable(Automata,Estado)). 
 
 %Se comprueba que el automata tiene al menos un estado final.
 %hayEstadoFinal(+Fs)
-hayEstadoFinal(Fs) :- length(Fs, N), N > 0.
+hayEstadoFinal(Finales) :- length(Finales, N), N > 0.
 
 %Se chequea que no hay estados finales repetidos.
 %noHayFinalesRepetidos(+Fs)
-noHayFinalesRepetidos(Fs) :- sacarDup(Fs, FsSinDup), length(Fs, N), length(FsSinDup, N).
+noHayFinalesRepetidos(Finales) :- sacarDup(Finales, FinalesSinDup), length(Finales, N), length(FinalesSinDup, N).
 
 % Se fija que no haya transiciones repetidas.
 %noHayTransicionesRep(+Ts)
-noHayTransicionesRep(Ts) :- sacarDup(Ts, TsSinDup), length(Ts, N), length(TsSinDup, N).
+noHayTransicionesRep(Transiciones) :- sacarDup(Transiciones, TransicionesSinDup), length(Transiciones, N), length(TransicionesSinDup, N).
 
 
 %--- NOTA: De acá en adelante se asume que los autómatas son válidos.
@@ -192,20 +194,21 @@ noHayTransicionesRep(Ts) :- sacarDup(Ts, TsSinDup), length(Ts, N), length(TsSinD
 % Si se encuentra un camino que empiece y termine en el mismo estado, con alguna longitud 
 % entre 2 y la cantidad de estados más uno, hay un ciclo y la función da True.
 % 8) hayCiclo(+Automata)
-hayCiclo(A) :- estados(A, Es), length(Es, M), P is M + 1, member(E, Es),
-				between(2, P, N), caminoDeLongitud(A, N, _, _, E, E), !.
+hayCiclo(Automata) :- estados(Automata, Estados), length(Estados, M), P is M + 1, member(Estado, Estados),
+				between(2, P, N), caminoDeLongitud(Automata, N, _, _, Estado, Estado), !.
 
 
 % Se utiliza Generate & Test.
 % 9) reconoce(+Automata, ?Palabra)
-reconoce(A, P) :- nonvar(P), length(P,N), inicialDe(A,Si), finalesDe(A,Sfs), 
-					member(Sf,Sfs), Nm1 is N+1, caminoDeLongitud(A,Nm1,_,TmpP,Si,Sf), sameList(P,TmpP).
+reconoce(Automata, Palabra) :- nonvar(Palabra), length(Palabra,N), inicialDe(Automata,Si), finalesDe(Automata,Finales), 
+					member(Sf,Finales), Nm1 is N+1, caminoDeLongitud(Automata,Nm1,_,TmpPalabra,Si,Sf), sameList(Palabra,TmpPalabra).
 
-reconoce(A, P) :- var(P), not(hayCiclo(A)), inicialDe(A,Si), finalesDe(A,Sfs), 
-					transicionesDe(A,T), length(T,N), Nm1 is N+1, between(1, Nm1, Tam), member(Sf,Sfs), caminoDeLongitud(A,Tam,_,P,Si,Sf).
+reconoce(Automata, Palabra) :- var(Palabra), not(hayCiclo(Automata)), inicialDe(Automata,Si), finalesDe(Automata,Finales), 
+					transicionesDe(Automata,Transiciones), length(Transiciones,N), Nm1 is N+1, between(1, Nm1, Tam), member(Sf,Finales), 
+					caminoDeLongitud(Automata,Tam,_,Palabra,Si,Sf).
 
-reconoce(A, P) :- var(P), hayCiclo(A), inicialDe(A,Si), finalesDe(A,Sfs), 
-					desde(1, N), member(Sf,Sfs), caminoDeLongitud(A,N,_,P,Si,Sf).
+reconoce(Automata, Palabra) :- var(Palabra), hayCiclo(Automata), inicialDe(Automata,Si), finalesDe(Automata,Finales), 
+					desde(1, N), member(Sf,Finales), caminoDeLongitud(Automata,N,_,Palabra,Si,Sf).
 
 
 % Se utiliza Generate & Test.
@@ -215,19 +218,21 @@ reconoce(A, P) :- var(P), hayCiclo(A), inicialDe(A,Si), finalesDe(A,Sfs),
 % que van desde el estado inicial a un estado final. Luego, con reconoceAcotado (explicado debajo), se generan 
 % todas la palabras que reconoce el autómata con la longitud hallada.
 % 10) PalabraMásCorta(+Automata, ?Palabra)
-palabraMasCorta(A, Palabra) :- nonvar(Palabra), reconoce(A,Palabra),  
-								transicionesDe(A,T), length(T,N), Nm1 is N+1, inicialDe(A,Si), finalesDe(A,Sfs), 
-								between(1,Nm1,Tam), member(Sf,Sfs), caminoDeLongitud(A,Tam,_,_,Si,Sf), !, Tam2 is Tam -1,
+palabraMasCorta(Automata, Palabra) :- nonvar(Palabra), reconoce(Automata,Palabra),  
+								transicionesDe(Automata,Transiciones), length(Transiciones,N), Nm1 is N+1, inicialDe(Automata,Si), 
+								finalesDe(Automata,Sfs), 
+								between(1,Nm1,Tam), member(Sf,Sfs), caminoDeLongitud(Automata,Tam,_,_,Si,Sf), !, Tam2 is Tam -1,
 								length(Palabra,TamPal), Tam2 = TamPal.
-palabraMasCorta(A, Palabra) :- var(Palabra), transicionesDe(A,T), length(T,N), Nm1 is N+1, inicialDe(A,Si), finalesDe(A,Sfs), 
-							between(1,Nm1,Tam), member(Sf,Sfs), caminoDeLongitud(A,Tam,_,_,Si,Sf), !, Len is Tam - 1 ,
-							reconoceAcotado(A, Palabra, Len).
+palabraMasCorta(Automata, Palabra) :- var(Palabra), transicionesDe(Automata,Transiciones), length(Transiciones,N), Nm1 is N+1, 
+									inicialDe(Automata,Si), finalesDe(Automata,Sfs), 
+							between(1,Nm1,Tam), member(Sf,Sfs), caminoDeLongitud(Automata,Tam,_,_,Si,Sf), !, Len is Tam - 1 ,
+							reconoceAcotado(Automata, Palabra, Len).
 
 
 % Se utiliza Generate & Test.
 % Genera todas las palabras de longitud N de un automata dado.
-%reconoceAcotado(+A, ?P, +N)
-reconoceAcotado(A, P, N) :- length(P, N), reconoce(A, P).
+%reconoceAcotado(+Automata, ?Palabra, +N)
+reconoceAcotado(Automata, Palabra, N) :- length(Palabra, N), reconoce(Automata, Palabra).
 
 %-----------------
 %----- Tests -----
