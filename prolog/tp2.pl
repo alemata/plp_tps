@@ -16,6 +16,7 @@ ejemplo(11, a(s1,[sf],[(s1,t,s2),(s1,l,s2),(s2,a,s3),(s3,s,sf),(s2,o,s4),(s4,c,s
 ejemplo(12, a(s1,[sf],[(s1,a1,s2),(s1,a1,s3),(s2,a2,sf),(s3,a2,sf)])). 
 ejemplo(13, a(si, [sf,s3], [(si,a,s1),(s1,a,s11),(s11,b,s10),(s10,c,sf),(si,p,s3)])).
 ejemplo(14, a(si, [si], [(si,c,s1),(s1,i,s2),(s2,c,s3),(s3,l,s4),(s4,o,si)])).
+ejemplo(15, a(s1, [s3], [(s1, a, s2), (s2, a, s3)])).
 
 ejemploMalo(1, a(s1, [s2], [(s1, a, s1), (s1, b, s2), (s2, b, s2), (s2, a, s3)])). %s3 es un estado sin salida.
 ejemploMalo(2, a(s1, [sf], [(s1, a, s1), (sf, b, sf)])). %sf no es alcanzable.
@@ -230,9 +231,9 @@ palabraMasCorta(Automata, Palabra) :- nonvar(Palabra), reconoce(Automata,Palabra
 								between(1,Nm1,Tam), member(Sf,Sfs), caminoDeLongitud(Automata,Tam,_,_,Si,Sf), !, Tam2 is Tam -1,
 								length(Palabra,TamPal), Tam2 = TamPal.
 palabraMasCorta(Automata, Palabra) :- var(Palabra), transicionesDe(Automata,Transiciones), length(Transiciones,N), Nm1 is N+1, 
-									inicialDe(Automata,Si), finalesDe(Automata,Sfs), 
-							between(1,Nm1,Tam), member(Sf,Sfs), caminoDeLongitud(Automata,Tam,_,_,Si,Sf), !, Len is Tam - 1 ,
-							reconoceAcotado(Automata, Palabra, Len).
+								inicialDe(Automata,Si), finalesDe(Automata,Sfs), 
+								between(1,Nm1,Tam), member(Sf,Sfs), caminoDeLongitud(Automata,Tam,_,_,Si,Sf), !, Len is Tam - 1,
+								reconoceAcotado(Automata, Palabra, Len).
 
 
 % Se utiliza Generate & Test.
@@ -282,44 +283,48 @@ test(25) :- ejemplo(5,A), findall(X, esCamino(A, X, s2, [s1,s1,s2]), [(s1)]).
 test(26) :- ejemplo(5,A), findall(X, esCamino(A, X, s3, [s1,s1,s2]), []).
 
 %Test para ejercicio 5.
+
 %test(NUMERO) :- ejemplo(4,A), estados(A,Es), caminoDeLongitud(A, 1, Camino, Etiquetas, Si, Sf), member(Si, Es), Sf is Si, Camino = [Si], lenght(Etiquetas,0).
 %ejemplo(4, a(s1, [s2, s3], [(s1, a, s1), (s1, a, s2), (s1, b, s3)])).
+test(27) :- ejemplo(6,A), caminoDeLongitud(A, 3, Camino, Etiquetas, s1, s3), Camino = [s1,s2,s3], Etiquetas = [b,a].
+test(28) :- ejemplo(6,A), caminoDeLongitud(A, 3, Camino, Etiquetas, SI, s3), SI = s1, Camino = [s1,s2,s3], Etiquetas = [b,a].
+test(29) :- ejemplo(6,A), caminoDeLongitud(A, 3, Camino, Etiquetas, s1, SF), SF = s3, Camino = [s1,s2,s3], Etiquetas = [b,a].
+test(30) :- ejemplo(6,A), caminoDeLongitud(A, 3, Camino, Etiquetas, SI, SF), SI = s1, SF = s3, Camino = [s1,s2,s3], Etiquetas = [b,a].
+test(31) :- not((ejemplo(15,A), caminoDeLongitud(A, 4, _, _, _, _))).
 
-test(27) :- ejemplo(8,A), findall(Camino, caminoDeLongitud(A,5,Camino,_,s3,s1), [[s3,s1,s2,s3,s1],[s3,s1,s2,s3,s1]]),
-			findall(Etiquetas, caminoDeLongitud(A,5,_,Etiquetas,s3,s1), [[a,a,a,a],[a,a,b,a]]).
-test(28) :- not((ejemplo(9,A), caminoDeLongitud(A,5,_,_,s1,s2))).
-test(29) :- not((ejemplo(12,A), caminoDeLongitud(A,3,_,_,s2,s3))).
+test(32) :- ejemplo(8,A), 
+	findall(Camino, caminoDeLongitud(A,5,Camino,_,s3,s1), [[s3,s1,s2,s3,s1],[s3,s1,s2,s3,s1]]),
+	findall(Etiquetas, caminoDeLongitud(A,5,_,Etiquetas,s3,s1), [[a,a,a,a],[a,a,b,a]]).
+test(33) :- not((ejemplo(9,A), caminoDeLongitud(A,5,_,_,s1,s2))).
+test(34) :- not((ejemplo(12,A), caminoDeLongitud(A,3,_,_,s2,s3))).
 
 
 %Test para ejercicio 6.
-test(30) :- ejemplo(2,A), alcanzable(A,si).
-test(31) :- ejemplo(11,A), alcanzable(A,s5).
-test(32) :- ejemplo(10,A), alcanzable(A,s7).
-test(33) :- not((ejemploMalo(2,A), alcanzable(A,sf))).
-test(34) :- not((ejemploMalo(3,A), alcanzable(A,s2))).
-test(35) :- not((ejemploMalo(4,A), alcanzable(A,s2))).
+test(35) :- ejemplo(2,A), alcanzable(A,si).
+test(36) :- ejemplo(11,A), alcanzable(A,s5).
+test(37) :- ejemplo(10,A), alcanzable(A,s7).
+test(38) :- not((ejemploMalo(2,A), alcanzable(A,sf))).
+test(39) :- not((ejemploMalo(3,A), alcanzable(A,s2))).
+test(40) :- not((ejemploMalo(4,A), alcanzable(A,s2))).
 
 %Test para ejercicio 7.
 %No agrego nuevos, ya que el dado por la cátedra verifica todos los ejemplos, y como ya creamos nuevos...
 
 %Test para ejercicio 8.
-test(36) :- ejemplo(14, A), hayCiclo(A).
-test(37) :- not((member(X, [11, 12, 13]), ejemplo(X, A), hayCiclo(A))).
+test(41) :- ejemplo(14, A), hayCiclo(A).
+test(42) :- not((member(X, [11, 12, 13]), ejemplo(X, A), hayCiclo(A))).
 
 %Test para ejercicio 9.
-test(38) :- ejemplo(14,A), reconoce(A, [c,i,c,l,o,c,i,c,l,o]).
-test(39) :- not((ejemplo(14,A), reconoce(A, [c,i,c,l,o,c,i,c,l,o,c,i]))).
-test(40) :- ejemplo(11,A), findall(Palabra, reconoce(A,Palabra), [[t,a,s],[l,a,s],[t,o,c,o],[t,o,k,o],[l,o,c,o],[l,o,k,o]]).
-test(41) :- ejemplo(11,A), reconoce(A, [l,o,X,o]), member([X],[[k],[c]]). %¿Como escribo que el X es igual a k o a c?
+test(43) :- ejemplo(14,A), reconoce(A, [c,i,c,l,o,c,i,c,l,o]).
+test(44) :- not((ejemplo(14,A), reconoce(A, [c,i,c,l,o,c,i,c,l,o,c,i]))).
+test(45) :- ejemplo(11,A), findall(Palabra, reconoce(A,Palabra), [[t,a,s],[l,a,s],[t,o,c,o],[t,o,k,o],[l,o,c,o],[l,o,k,o]]).
+test(46) :- ejemplo(11,A), reconoce(A, [l,o,X,o]), member([X],[[k],[c]]). %¿Como escribo que el X es igual a k o a c?
 
 %Test para ejercicio 10.
-test(42):- ejemplo(11,A), palabraMasCorta(A,[t,a,s]).
-test(43):- not((ejemplo(14,A), palabraMasCorta(A,[c,i,c,l,o,c,i,c,l,o]))). 
-test(44):- ejemplo(11,A), findall(Palabra, palabraMasCorta(A,Palabra), [[t,a,s],[l,a,s]]).
-test(45):- ejemplo(10,A), findall(Palabra, palabraMasCorta(A,Palabra), [[p,r,o,l,o,g]]).
+test(47):- ejemplo(11,A), palabraMasCorta(A,[t,a,s]).
+test(48):- not((ejemplo(14,A), palabraMasCorta(A,[c,i,c,l,o,c,i,c,l,o]))). 
+test(49):- ejemplo(11,A), findall(Palabra, palabraMasCorta(A,Palabra), [[t,a,s],[l,a,s]]).
+test(50):- ejemplo(10,A), findall(Palabra, palabraMasCorta(A,Palabra), [[p,r,o,l,o,g]]).
 
 
-tests :- forall(between(1, 45, N), test(N)). %IMPORTANTE: Actualizar la cantidad total de tests para contemplar los que agreguen ustedes.
-
-
-%ejemplo(11, a(s1,[],[(),(),(),(),()])) 
+tests :- forall(between(1, 50, N), test(N)).
