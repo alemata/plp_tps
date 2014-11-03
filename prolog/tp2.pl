@@ -199,6 +199,12 @@ hayCiclo(Automata) :- estados(Automata, Estados), length(Estados, M), P is M + 1
 
 
 % Se utiliza Generate & Test.
+% Si la Palabra que se desea reconocer en el Autómata está definida, entonces se buscan todas las palabras que
+% se pueden conformar en ese mismo Autómata con la misma longitud a la Palabra dada. Luego, se comparan ambas 
+% verificando si alguna resulta ser idéntica. Si la palabra no está instanciada, se distingue el caso de que
+% el Autómata posee ciclos o no. En el primer caso, se generan entonces todas las palabras de longitud 1 hasta
+% infinito. Caso contrario, se generan todas las palabras que se pueden conformar con longitud 1 hasta 
+% la cantidad de Transiciones que posea el Autómata. 
 % 9) reconoce(+Automata, ?Palabra)
 reconoce(Automata, Palabra) :- nonvar(Palabra), length(Palabra,N), inicialDe(Automata,Si), finalesDe(Automata,Finales), 
 					member(Sf,Finales), Nm1 is N+1, caminoDeLongitud(Automata,Nm1,_,TmpPalabra,Si,Sf), sameList(Palabra,TmpPalabra).
