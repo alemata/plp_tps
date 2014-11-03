@@ -39,15 +39,15 @@ finalesDe(a(_, F, _), F).
 
 transicionesDe(a(_, _, T), T).
 
-%Auxiliar dada en clase
-%desde(+X, -Y).
+% Auxiliar dada en clase
+% desde(+X, -Y).
 desde(X, X).
 desde(X, Y):-desde(X, Z),  Y is Z + 1.
 
 %Funciones auxiliares
 
 % Se eliminan los elementos duplicados de la primer lista L1.
-%sacarDup(+L1, -L2).
+% sacarDup(+L1, -L2).
 sacarDup([],[]).
 sacarDup([X|L],L2) :- member(X,L), !, sacarDup(L,L2).
 sacarDup([X|L],[X|L2]) :- not(member(X,L)), sacarDup(L,L2).
@@ -55,12 +55,17 @@ sacarDup([X|L],[X|L2]) :- not(member(X,L)), sacarDup(L,L2).
 % Si ambas están definidas, retorna true si las dos son iguales.
 % Si una está instanciada y la otra no, genera la misma lista.
 % Y si las dos no están definidas, genera dos listas iguales.
-%sameList(?L1, ?L2).
+% sameList(?L1, ?L2).
 sameList([],[]).
 sameList([X|Xs],[X|Ys]) :- sameList(Xs,Ys).
 
 %%Predicados pedidos.
 
+
+% Se realizó primero la función noEsDeterministico y a partir de la negación 
+% de la misma se determina si el autómata lo es.
+% En noEsDeterministico da True cuando encuentra dos transiciones con el mismo
+% origen y la misma etiqueta.
 % 1) %esDeterministico(+Automata)
 esDeterministico(Automata) :- not(noEsDeterministico(Automata)).
 
@@ -71,6 +76,12 @@ noEsDeterministico(Automata) :- transicionesDe(Automata,T),
 								  O1 = O2, E1 = E2, D1 \= D2.
 
 
+% Tanto si Estados es variable o no, se genera una lista con el estado inicial,
+% con los estados de origen y destinos de las transicones del autómata y con 
+% los estados finales. Para el primer caso se usa "sort" que ordena la lista
+% de los estados alfabéticamente y además quita los repetidos. Para el segundo
+% caso, cuando Estados no es variable, se verifica que todos los estados de la
+% lista generada estén en Estados.
 % 2) estados(+Automata, ?Estados)
 estados(Automata, Estados) :- var(Estados), inicialDe(Automata, Si), 
 				transicionesDe(Automata, Ts), origenesydstAutomata(Ts, ODs),
@@ -90,6 +101,12 @@ origenesydstAutomata([(O,_,D)|Ts], [O,D|ODs]) :- origenesydstAutomata(Ts, ODs).
 
 
 
+% Si el camino es de de longitud uno, el estado inicial y final deben ser el mismo,
+% y únicamente se verifica que pertenezca a los estados del autómata.
+% Cuando el camino tiene una longitud mayor o igual que dos, se comprueba que el 
+% estado inicial sea el mismo que el primero del camino,y que el final sea el último 
+% de la lista que representa el camino. Luego, se chequea que dos estados continuos 
+% del caminos formen parte de alguna de las transiciones del autómata. 
 % 3)esCamino(+Automata, ?EstadoInicial, ?EstadoFinal, +Camino)
 esCamino(A, Si, Si, [Si]) :- estados(A, Estados), member(Si, Estados).
 esCamino(A, Si, Sf, [Si|C]) :- last(C,Sf2), Sf = Sf2,
@@ -108,25 +125,35 @@ estanEn([O,D|L1], L2) :- member((O,_,D), L2), !, estanEn([D|L1], L2).
 % Cuando hay ciclo, genera algunos caminos pero no todos, ya que se queda en el loop,
 % y sigue infinitamente generando por la misma rama.
 
+
+% Si el camino es de longitud uno, se comprueba que el estado que forma el camino, sea
+% parte de los estados del automata. Si la longitud del camino es mayor que uno, se crea
+% un camino desde el estado S1 hasta el S2, a partir de las transiciones del autómata.
 % 5) caminoDeLongitud(+Automata, +N, -Camino, -Etiquetas, ?S1, ?S2)
 caminoDeLongitud(A, 1, [Si], [], Si, Si) :- !, estados(A, Es), member(Si, Es). 			
 caminoDeLongitud(A, N, C, Tags, Si, Sf):- N > 1, estados(A, Es), member(Si, Es), member(Sf, Es), transicionesDe(A,T), 
-											Nm1 is N-1, crearCamino(Si, Sf, T, C, Nm1, Tags).
+											Nm1 is N-1, crearCaminoConEtiquetas(Si, Sf, T, C, Nm1, Tags).
 
 
 % Dado dos estados que serán el principio y el final del camino, genera los caminos de
 % tamaño N con sus respectivas etiquetas. 
-%crearCamino(?Si, ?Sf, +T, -Camino, +N, -Etiquetas).
-crearCamino(X, Sf, T, [X,Sf], 1, [E]) :- !, member((X,E,Sf),T).
-crearCamino(X, Sf, T, [X|C], N, [E|Etiquetas]) :- Nm1 is N-1, member((X,E,Y),T), crearCamino(Y, Sf, T, C, Nm1, Etiquetas). 
+%crearCaminoConEtiquetas(?Si, ?Sf, +T, -Camino, +N, -Etiquetas).
+crearCaminoConEtiquetas(X, Sf, T, [X,Sf], 1, [E]) :- !, member((X,E,Sf),T).
+crearCaminoConEtiquetas(X, Sf, T, [X|C], N, [E|Etiquetas]) :- Nm1 is N-1, member((X,E,Y),T), crearCaminoConEtiquetas(Y, Sf, T, C, Nm1, Etiquetas). 
 
 
 % Se utiliza Generate & Test.
+% Si hay un camino desde el estado inicial hasta el estado dado con alguna longitud 
+% entre 2 y la cantidad de estados más uno, entonces la función da True.
 % 6) alcanzable(+Automata, +Estado)
 alcanzable(A, E) :- inicialDe(A, Inicial), 
 					estados(A,Estados),	length(Estados, N), Nm1 is N+1, between(2, Nm1, X),
 					caminoDeLongitud(A, X, _, _, Inicial, E), !.
 
+
+% Se seleccionan los estados finales del autómata, los no finales, el inicial, los no iniciales y 
+% sus transiciones. Luego se verifican que se cumplan las condiciones para que un autómata sea
+% válidad. Éstas son explicadas más abajo.
 % 7) automataValido(+Automata)
 automataValido(A) :- estados(A, Estados), finalesDe(A, Finales), subtract(Estados, Finales, EstadosNoFinales), 
 						inicialDe(A, Inicial), subtract(Estados, [Inicial], EstadosNoIniciales), transicionesDe(A, Ts),
@@ -162,6 +189,8 @@ noHayTransicionesRep(Ts) :- sacarDup(Ts, TsSinDup), length(Ts, N), length(TsSinD
 
 
 % Se utiliza Generate & Test.
+% Si se encuentra un camino que empiece y termine en el mismo estado, con alguna longitud 
+% entre 2 y la cantidad de estados más uno, hay un ciclo y la función da True.
 % 8) hayCiclo(+Automata)
 hayCiclo(A) :- estados(A, Es), length(Es, M), P is M + 1, member(E, Es),
 				between(2, P, N), caminoDeLongitud(A, N, _, _, E, E), !.
@@ -180,6 +209,11 @@ reconoce(A, P) :- var(P), hayCiclo(A), inicialDe(A,Si), finalesDe(A,Sfs),
 
 
 % Se utiliza Generate & Test.
+% Si Palabra está instanciada, se verifica que el autómata la reconozca y luego que su longitud sea
+% la más corta de los posibles caminos desde el estado inicial a algunos de los finales.
+% En el caso que Palabra sea una variable, se busca cual es la longitud más pequeña de los caminos del autómata
+% que van desde el estado inicial a un estado final. Luego, con reconoceAcotado (explicado debajo), se generan 
+% todas la palabras que reconoce el autómata con la longitud hallada.
 % 10) PalabraMásCorta(+Automata, ?Palabra)
 palabraMasCorta(A, Palabra) :- nonvar(Palabra), reconoce(A,Palabra),  
 								transicionesDe(A,T), length(T,N), Nm1 is N+1, inicialDe(A,Si), finalesDe(A,Sfs), 
