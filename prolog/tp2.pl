@@ -1,5 +1,6 @@
 %%Predicados pedidos.
 
+% -----------1-------------
 % Se realizó primero la función noEsDeterministico y a partir de la negación
 % de la misma se determina si el autómata lo es.
 % En noEsDeterministico da True cuando encuentra dos transiciones con el mismo
@@ -18,6 +19,7 @@ noEsDeterministico(Automata):-
   D1 \= D2.
 
 
+% -----------2-------------
 % Tanto si Estados es variable o no, se genera una lista con el estado inicial,
 % con los estados de origen y destinos de las transicones del autómata y con
 % los estados finales. Para el primer caso se usa "sort" que ordena la lista
@@ -25,24 +27,25 @@ noEsDeterministico(Automata):-
 % caso, cuando Estados no es variable, se verifica que todos los estados de la
 % lista generada estén en Estados.
 % 2) estados(+Automata, ?Estados)
-estados(Automata, Estados):-
+ estados(Automata, Estados):-
   var(Estados),
-  inicialDe(Automata, Si),
-  transicionesDe(Automata, Transiciones),
-  origenesydstAutomata(Transiciones, ODs),
-  finalesDe(Automata, Finales),
-  append([Si|ODs], Finales, EstadosConRepetidos),
+  listaEstadosConRepetidos(Automata, EstadosConRepetidos),
   sort(EstadosConRepetidos, Estados).
 
 estados(Automata, Estados):-
   nonvar(Estados),
+  listaEstadosConRepetidos(Automata, EstadosConRepetidos),
+  forall(member(E, EstadosConRepetidos), member(E, Estados)).
+
+% genera en EstadosConRepetidos lista con el estado inicial,
+% con los estados de origen y destinos de las transicones del autómata y con
+% los estados finales.
+listaEstadosConRepetidos(Automata, EstadosConRepetidos):-
   inicialDe(Automata, Si),
   transicionesDe(Automata, Transiciones),
   origenesydstAutomata(Transiciones, ODs),
   finalesDe(Automata, Finales),
-  append([Si|ODs], Finales, EstadosConRepetidos),
-  forall(member(E, EstadosConRepetidos), member(E, Estados)).
-
+  append([Si|ODs], Finales, EstadosConRepetidos).
 
 % A partir de las transiciones de un automata, retorna una lista con todos los estados
 % que participan de alguna transición.
@@ -52,7 +55,7 @@ origenesydstAutomata([(O,_,D)|Transiciones], [O,D|ODs]):-
   origenesydstAutomata(Transiciones, ODs).
 
 
-
+% -----------3-------------
 % Si el camino es de de longitud uno, el estado inicial y final deben ser el mismo,
 % y únicamente se verifica que pertenezca a los estados del autómata.
 % Cuando el camino tiene una longitud mayor o igual que dos, se comprueba que el
@@ -79,6 +82,7 @@ estanEn([O,D|L1], L2):-
   estanEn([D|L1], L2).
 
 
+% -----------4-------------
 % 4) ¿el predicado anterior es o no reversible con respecto a Camino y por qué?
 % No, no es reversible.
 % Esto se debe a la forma de recorrer el camino para la verificación. No se tiene
@@ -88,6 +92,7 @@ estanEn([O,D|L1], L2):-
 % y sigue infinitamente generando por la misma rama.
 
 
+% -----------5-------------
 % Si el camino es de longitud uno, se comprueba que el estado que forma el camino, sea
 % parte de los estados del automata. Si la longitud del camino es mayor que uno, se crea
 % un camino desde el estado S1 hasta el S2, a partir de las transiciones del autómata.
@@ -104,7 +109,6 @@ caminoDeLongitud(Automata, N, Camino, Etiquetas, Si, Sf):- N > 1,
   Nm1 is N-1,
   crearCaminoConEtiquetas(Si, Sf, Transiciones, Camino, Nm1, Etiquetas).
 
-
 % Dado dos estados que serán el principio y el final del camino, genera los caminos de
 % tamaño N con sus respectivas etiquetas.
 %crearCaminoConEtiquetas(?Si, ?Sf, +Transiciones, -Camino, +N, -Etiquetas).
@@ -117,6 +121,7 @@ crearCaminoConEtiquetas(X, Sf, Transiciones, [X|C], N, [E|Etiquetas]):-
   crearCaminoConEtiquetas(Y, Sf, Transiciones, C, Nm1, Etiquetas).
 
 
+% -----------6-------------
 % Se utiliza Generate & Test.
 % Si hay un camino desde el estado inicial hasta el estado dado con alguna longitud
 % entre 2 y la cantidad de estados más uno, entonces la función da True.
@@ -130,7 +135,7 @@ alcanzable(Automata, Estado):-
   caminoDeLongitud(Automata, M, _, _, Inicial, Estado),
   !.
 
-
+% -----------7-------------
 % Se seleccionan los estados finales del autómata, los no finales, el inicial, los no iniciales y
 % sus transiciones. Luego se verifican que se cumplan las condiciones para que un autómata sea
 % válidad. Éstas son explicadas más abajo.
@@ -182,7 +187,7 @@ noHayTransicionesRep(Transiciones):-
 
 %--- NOTA: De acá en adelante se asume que los autómatas son válidos.
 
-
+% -----------8-------------
 % Se utiliza Generate & Test.
 % Si se encuentra un camino que empiece y termine en el mismo estado, con alguna longitud
 % entre 2 y la cantidad de estados más uno, hay un ciclo y la función da True.
@@ -196,6 +201,7 @@ hayCiclo(Automata):-
   caminoDeLongitud(Automata, N, _, _, Estado, Estado), !.
 
 
+% -----------9-------------
 % Se utiliza Generate & Test.
 % Si la Palabra que se desea reconocer en el Autómata está definida, entonces se buscan todas las palabras que
 % se pueden conformar en ese mismo Autómata con la misma longitud a la Palabra dada. Luego, se comparan ambas
@@ -235,6 +241,7 @@ reconoce(Automata, Palabra):-
   caminoDeLongitud(Automata,N,_,Palabra,Si,Sf).
 
 
+% -----------10-------------
 % Se utiliza Generate & Test.
 % Si Palabra está instanciada, se verifica que el autómata la reconozca y luego que su longitud sea
 % la más corta de los posibles caminos desde el estado inicial a algunos de los finales.
@@ -268,7 +275,6 @@ palabraMasCorta(Automata, Palabra):-
   !,
   Len is Tam - 1,
   reconoceAcotado(Automata, Palabra, Len).
-
 
 % Se utiliza Generate & Test.
 % Genera todas las palabras de longitud N de un automata dado.
