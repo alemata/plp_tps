@@ -31,7 +31,7 @@
 \usepackage{graphicx}
 \usepackage{caption}
 \usepackage{color}
-\usepackage{appendix}
+%\usepackage{appendix}
 \usepackage{fancyhdr}
 
 
@@ -48,7 +48,7 @@
 \begin{document}
 \pagestyle{myheadings}
 \maketitle
-\markboth{Paradigmas de Lenguajes de Programación}{}
+\markboth{Paradigmas de Lenguajes de Programación}{Programación Lógica}
 
 \thispagestyle{empty}
 \tableofcontents
@@ -56,42 +56,11 @@
 \section{Código y comentarios}
 A continuación se muestra cada función con su explicación.
 
-\subsection{Funciones auxiliares}
-
-Auxiliar dada en clase
-\begin{verbatim}
-%desde(+X, -Y).
-desde(X, X).
-desde(X, Y):-
-  desde(X, Z),
-  Y is Z + 1.
-\end{verbatim}
-
-
-Se eliminan los elementos duplicados de la primer lista L1.
-\begin{verbatim}
-%sacarDup(+L1, -L2).
-sacarDup([],[]).
-sacarDup([X|L],L2):-
-  member(X,L),
-  !,
-  sacarDup(L,L2).
-sacarDup([X|L],[X|L2]):-
-  not(member(X,L)), sacarDup(L,L2).
-\end{verbatim}
-
-Si ambas están definidas, retorna true si las dos son iguales.
-Si una está instanciada y la otra no, genera la misma lista.
-Y si las dos no están definidas, genera dos listas iguales.
-
-\begin{verbatim}
-%sameList(?L1, ?L2).
-sameList([],[]).
-sameList([X|Xs],[X|Ys]) :- 
-  sameList(Xs,Ys).
-\end{verbatim}
-
-\subsection{Ejercicio1}
+\subsection{Ejercicio 1}
+Se realizó primero la función noEsDeterministico y a partir de la negación
+de la misma se determina si el autómata lo es.
+La función noEsDeterministico da True cuando encuentra dos transiciones con el mismo
+origen y la misma etiqueta.
 
 \begin{verbatim}
 %esDeterministico(+Automata)
@@ -108,12 +77,23 @@ noEsDeterministico(Automata) :-
   O1 = O2,
   E1 = E2,
   D1 \= D2.
-
-
 \end{verbatim}
-Ejemplo:
+
+\textbf{Ejemplo:}
+
+\begin{verbatim}
+?- ejemplo(13, A), esDeterministico(A).
+A = a(si, [sf, s3], [ (si, a, s1), (s1, a, s11), (s11, b, s10), (s10, c, sf), (si, p, s3)]).
+\end{verbatim}
 
 \subsection{Ejercicio 2}
+
+Tanto si Estados es variable o no, se genera una lista con el estado inicial,
+con los estados de origen y destinos de las transicones del autómata y con
+los estados finales. Para el primer caso se usa "sort" que ordena la lista
+de los estados alfabéticamente y además quita los repetidos. Para el segundo
+caso, cuando Estados no es variable, se verifica que todos los estados de la
+lista generada estén en Estados.
 
 \begin{verbatim}
 % estados(+Automata, ?Estados)
@@ -128,8 +108,8 @@ estados(Automata, Estados):-
   forall(member(E, EstadosConRepetidos), member(E, Estados)). 
 \end{verbatim} 
 
-genera en EstadosConRepetidos lista con el estado inicial, 
-con los estados de origen y destinos de las transicones del autómata y con
+En EstadosConRepetidos se genera la lista con el estado inicial,
+con los estados de origen y destino de las transicones del autómata y con
 los estados finales.
 
 \begin{verbatim}
@@ -152,8 +132,27 @@ origenesydstAutomata([], []).
 origenesydstAutomata([(O,_,D)|Ts], [O,D|ODs]) :- origenesydstAutomata(Ts, ODs).
 \end{verbatim}
 
+\textbf{Ejemplo:}
+
+\begin{verbatim}
+?- ejemplo(5, A), estados(A, E).
+A = a(s1, [s2, s3], [ (s1, a, s1), (s1, b, s2), (s1, c, s3), (s2, c, s3)]),
+E = [s1, s2, s3] .
+
+?- ejemplo(5, A), estados(A, [s2,s1]).
+false.
+\end{verbatim}
+
+
 
 \subsection{Ejercicio 3}
+Si el camino es de de longitud uno, el estado inicial y final deben ser el mismo,
+y únicamente se verifica que pertenezca a los estados del autómata.
+Cuando el camino tiene una longitud mayor o igual que dos, se comprueba que el
+estado inicial sea el mismo que el primero del camino,y que el final sea el último
+de la lista que representa el camino. Luego, se chequea que dos estados continuos
+del caminos formen parte de alguna de las transiciones del autómata.
+
 \begin{verbatim}
 % esCamino(+Automata, ?EstadoInicial, ?EstadoFinal, +Camino)
 esCamino(Automata, Si, Si, [Si]):-
@@ -175,7 +174,14 @@ estanEn([O,D|L1], L2):-
   estanEn([D|L1], L2).									
 \end{verbatim}
 
-Ejemplo:
+\textbf{Ejemplo:}
+\begin{verbatim}
+?- ejemplo(6, A), esCamino(A, I, F, [s1,s2,s3,s2,s3]).
+A = a(s1, [s3], [ (s1, b, s2), (s3, n, s2), (s2, a, s3)]),
+I = s1,
+F = s3.
+\end{verbatim}
+
 
 \subsection{Ejercicio 4}
 
@@ -188,6 +194,9 @@ y sigue infinitamente generando por la misma rama.
 
 
 \subsection{Ejercicio 5}
+Si el camino es de longitud uno, se comprueba que el estado que forma el camino, sea
+parte de los estados del automata. Si la longitud del camino es mayor que uno, se crea
+un camino desde el estado S1 hasta el S2, a partir de las transiciones del autómata.
 
 \begin{verbatim}
 % caminoDeLongitud(+Automata, +N, -Camino, -Etiquetas, ?S1, ?S2)
@@ -219,10 +228,29 @@ crearCaminoConEtiquetas(X, Sf, Transiciones, [X|C], N, [E|Etiquetas]):-
   crearCaminoConEtiquetas(Y, Sf, Transiciones, C, Nm1, Etiquetas).
 \end{verbatim}
 
-Ejemplo:
+\textbf{Ejemplo:}
+\begin{verbatim}
+ ?- ejemplo(6, A), caminoDeLongitud(A, 3, Camino, Etiquetas, Origen, Destino).
+A = a(s1, [s3], [ (s1, b, s2), (s3, n, s2), (s2, a, s3)]),
+Camino = [s1, s2, s3],
+Etiquetas = [b, a],
+Origen = s1,
+Destino = s3 ;
+A = a(s1, [s3], [ (s1, b, s2), (s3, n, s2), (s2, a, s3)]),
+Camino = [s2, s3, s2],
+Etiquetas = [a, n],
+Origen = Destino, Destino = s2 ;
+A = a(s1, [s3], [ (s1, b, s2), (s3, n, s2), (s2, a, s3)]),
+Camino = [s3, s2, s3],
+Etiquetas = [n, a],
+Origen = Destino, Destino = s3.
+\end{verbatim}
+
 
 \subsection{Ejercicio 6}
-Se utiliza Generate & Test.
+Se utiliza Generate \& Test.
+Si hay un camino desde el estado inicial hasta el estado dado con alguna longitud
+entre 2 y la cantidad de estados más uno, entonces la función da True.
 \begin{verbatim}
 % alcanzable(+Automata, +Estado)
 alcanzable(Automata, Estado):-
@@ -235,10 +263,25 @@ alcanzable(Automata, Estado):-
   !.
 \end{verbatim}
 
-Ejemplo:
+\textbf{Ejemplo:}
+\begin{verbatim}
+?- ejemplo(7,A), alcanzable(A, s1).
+false.
+
+?- ejemplo(7,A), alcanzable(A, s3).
+A = a(s1, [s2], [ (s1, a, s3), (s3, a, s3), (s3, b, s2), (s2, b, s2)]).
+
+?- ejemplo(7,A), alcanzable(A, s8).
+false.
+\end{verbatim}
 
 
 \subsection{Ejercicio 7}
+
+Se seleccionan los estados finales del autómata, los no finales, el inicial, los no iniciales y
+sus transiciones. Luego se verifican que se cumplan las condiciones para que un autómata sea
+válidad. Éstas son explicadas más abajo.
+
 \begin{verbatim}
 % automataValido(+Automata)
 automataValido(Automata):-
@@ -296,12 +339,26 @@ noHayTransicionesRep(Ts):-
   length(TsSinDup, N).
 \end{verbatim}
 
-Ejemplo:
+\textbf{Ejemplo:}
+
+\begin{verbatim}
+?- ejemplo(10,A), automataValido(A).
+A = a(s1, [s10, s11], 
+        [(s2, a, s3), (s4, a, s5), (s9, a, s10), (s5, d, s6), (s7, g, s8), (s15, g, s11), (s6, i, s7), (s13, l, s14), 
+        (s8, m, s9), (s12, o, s13), (s14, o, s15), (s1, p, s2), (s3, r, s4), (s2, r, s12), (s10, s, s11)]).
+
+?- ejemploMalo(5,A), automataValido(A).
+A = a(s1, [s3, s2, s3], [ (s1, a, s2), (s2, b, s3)]).
+
+\end{verbatim}
+
 
 
 \subsection{Ejercicio 8}
 
-Se utiliza Generate & Test.
+Se utiliza Generate \& Test.
+Si se encuentra un camino que empiece y termine en el mismo estado, con alguna longitud
+entre 2 y la cantidad de estados más uno, hay un ciclo y la función da True.
 
 \begin{verbatim}
 % hayCiclo(+Automata)
@@ -312,14 +369,29 @@ hayCiclo(Automata):-
   member(Estado, Estados),
   between(2, P, N),
   caminoDeLongitud(Automata, N, _, _, Estado, Estado), !.
+\end{verbatim}
+
+\textbf{Ejemplo:}
+\begin{verbatim}
+?- ejemplo(4,A), hayCiclo(A).
+A = a(s1, [s2, s3], [ (s1, a, s1), (s1, a, s2), (s1, b, s3)]).
+
+?- ejemplo(3,A), hayCiclo(A).
+false.
 
 \end{verbatim}
 
-Ejemplo:
 
 \subsection{Ejercicio 9}
 
-Se utiliza Generate & Test.
+Se utiliza Generate \& Test.
+Si la Palabra que se desea reconocer en el Autómata está definida, entonces se buscan todas las palabras que
+se pueden conformar en ese mismo Autómata con la misma longitud a la Palabra dada. Luego, se comparan ambas
+verificando si alguna resulta ser idéntica. Si la palabra no está instanciada, se distingue el caso de que
+el Autómata posee ciclos o no. En el primer caso, se generan entonces todas las palabras de longitud 1 hasta
+infinito. Caso contrario, se generan todas las palabras que se pueden conformar con longitud 1 hasta
+la cantidad de Transiciones que posea el Autómata.
+
 \begin{verbatim}
 % reconoce(+Automata, ?Palabra)
 reconoce(Automata, Palabra):-
@@ -353,12 +425,41 @@ reconoce(Automata, Palabra):-
   caminoDeLongitud(Automata,N,_,Palabra,Si,Sf).
 \end{verbatim}
 
-Ejemplo:
+\textbf{Ejemplo:}
+\begin{verbatim}
+?- ejemplo(14,A), reconoce(A, [c,i,c,l,o,c,i,c,l,o]).
+A = a(si, [si], [ (si, c, s1), (s1, i, s2), (s2, c, s3), (s3, l, s4), (s4, o, si)]).
+
+?- ejemplo(10,A), reconoce(A, [p, a, r, a, d, i, g, m, a, s]).
+A = a(s1, [s10, s11], 
+        [(s2, a, s3), (s4, a, s5), (s9, a, s10), (s5, d, s6), (s7, g, s8), (s15, g, s11), (s6, i, s7), (s13, l, s14), 
+        (s8, m, s9), (s12, o, s13), (s14, o, s15), (s1, p, s2), (s3, r, s4), (s2, r, s12), (s10, s, s11)]).
+
+?- ejemplo(10,A), reconoce(A, P).
+A = a(s1, [s10, s11], 
+        [(s2, a, s3), (s4, a, s5), (s9, a, s10), (s5, d, s6), (s7, g, s8), (s15, g, s11), (s6, i, s7), (s13, l, s14), 
+        (s8, m, s9), (s12, o, s13), (s14, o, s15), (s1, p, s2), (s3, r, s4), (s2, r, s12), (s10, s, s11)]).
+P = [p, r, o, l, o, g] ;
+A = a(s1, [s10, s11], 
+        [(s2, a, s3), (s4, a, s5), (s9, a, s10), (s5, d, s6), (s7, g, s8), (s15, g, s11), (s6, i, s7), (s13, l, s14), 
+        (s8, m, s9), (s12, o, s13), (s14, o, s15), (s1, p, s2), (s3, r, s4), (s2, r, s12), (s10, s, s11)]).
+P = [p, a, r, a, d, i, g, m, a] ;
+A = a(s1, [s10, s11], 
+        [(s2, a, s3), (s4, a, s5), (s9, a, s10), (s5, d, s6), (s7, g, s8), (s15, g, s11), (s6, i, s7), (s13, l, s14), 
+        (s8, m, s9), (s12, o, s13), (s14, o, s15), (s1, p, s2), (s3, r, s4), (s2, r, s12), (s10, s, s11)]).
+P = [p, a, r, a, d, i, g, m, a, s] .
+\end{verbatim}
+
 
 
 \subsection{Ejercicio 10}
 
-Se utiliza Generate & Test.
+Se utiliza Generate \& Test.
+Si Palabra está instanciada, se verifica que el autómata la reconozca y luego que su longitud sea
+la más corta de los posibles caminos desde el estado inicial a algunos de los finales.
+En el caso que Palabra sea una variable, se busca cual es la longitud más pequeña de los caminos del autómata
+que van desde el estado inicial a un estado final. Luego, con reconoceAcotado (explicado debajo), se generan
+todas la palabras que reconoce el autómata con la longitud hallada.
 
 \begin{verbatim}
 % PalabraMásCorta(+Automata, ?Palabra)
@@ -392,7 +493,7 @@ palabraMasCorta(Automata, Palabra):-
 
 \end{verbatim}
 							
-Se utiliza Generate & Test.
+Se utiliza Generate \& Test.
 Genera todas las palabras de longitud N de un automata dado.
 \begin{verbatim}
 % reconoceAcotado(+A, ?P, +N)
@@ -402,7 +503,52 @@ reconoceAcotado(Automata, Palabra, N):-
 
 \end{verbatim}
 
-Ejemplo:
+\textbf{Ejemplo:}
+\begin{verbatim}
+?- ejemplo(4,A), palabraMasCorta(A,P).
+A = a(s1, [s2, s3], [ (s1, a, s1), (s1, a, s2), (s1, b, s3)]),
+P = [a] ;
+A = a(s1, [s2, s3], [ (s1, a, s1), (s1, a, s2), (s1, b, s3)]),
+P = [b].
 
+?- ejemplo(7,A), palabraMasCorta(A,[a,b,b]).
+false.
+\end{verbatim}
+
+
+\subsection{Funciones auxiliares}
+
+Auxiliar dada en clase
+\begin{verbatim}
+%desde(+X, -Y).
+desde(X, X).
+desde(X, Y):-
+  desde(X, Z),
+  Y is Z + 1.
+\end{verbatim}
+
+
+Se eliminan los elementos duplicados de la primer lista L1.
+\begin{verbatim}
+%sacarDup(+L1, -L2).
+sacarDup([],[]).
+sacarDup([X|L],L2):-
+  member(X,L),
+  !,
+  sacarDup(L,L2).
+sacarDup([X|L],[X|L2]):-
+  not(member(X,L)), sacarDup(L,L2).
+\end{verbatim}
+
+Si ambas están definidas, retorna true si las dos son iguales.
+Si una está instanciada y la otra no, genera la misma lista.
+Y si las dos no están definidas, genera dos listas iguales.
+
+\begin{verbatim}
+%sameList(?L1, ?L2).
+sameList([],[]).
+sameList([X|Xs],[X|Ys]) :- 
+  sameList(Xs,Ys).
+\end{verbatim}
 
 \end{document}

@@ -3,7 +3,7 @@
 % -----------1-------------
 % Se realizó primero la función noEsDeterministico y a partir de la negación
 % de la misma se determina si el autómata lo es.
-% En noEsDeterministico da True cuando encuentra dos transiciones con el mismo
+% La función noEsDeterministico da True cuando encuentra dos transiciones con el mismo
 % origen y la misma etiqueta.
 % 1) %esDeterministico(+Automata)
 esDeterministico(Automata):-
@@ -37,8 +37,8 @@ estados(Automata, Estados):-
   listaEstadosConRepetidos(Automata, EstadosConRepetidos),
   forall(member(E, EstadosConRepetidos), member(E, Estados)).
 
-% genera en EstadosConRepetidos lista con el estado inicial,
-% con los estados de origen y destinos de las transicones del autómata y con
+% En EstadosConRepetidos se genera la lista con el estado inicial,
+% con los estados de origen y destino de las transicones del autómata y con
 % los estados finales.
 listaEstadosConRepetidos(Automata, EstadosConRepetidos):-
   inicialDe(Automata, Si),
@@ -396,9 +396,6 @@ test(25) :- ejemplo(5,A), findall(X, esCamino(A, X, s2, [s1,s1,s2]), [(s1)]).
 test(26) :- ejemplo(5,A), findall(X, esCamino(A, X, s3, [s1,s1,s2]), []).
 
 %Test para ejercicio 5.
-
-%test(NUMERO) :- ejemplo(4,A), estados(A,Es), caminoDeLongitud(A, 1, Camino, Etiquetas, Si, Sf), member(Si, Es), Sf is Si, Camino = [Si], lenght(Etiquetas,0).
-%ejemplo(4, a(s1, [s2, s3], [(s1, a, s1), (s1, a, s2), (s1, b, s3)])).
 test(27) :- ejemplo(6,A), caminoDeLongitud(A, 3, Camino, Etiquetas, s1, s3), Camino = [s1,s2,s3], Etiquetas = [b,a].
 test(28) :- ejemplo(6,A), caminoDeLongitud(A, 3, Camino, Etiquetas, SI, s3), SI = s1, Camino = [s1,s2,s3], Etiquetas = [b,a].
 test(29) :- ejemplo(6,A), caminoDeLongitud(A, 3, Camino, Etiquetas, s1, SF), SF = s3, Camino = [s1,s2,s3], Etiquetas = [b,a].
@@ -411,7 +408,6 @@ test(32) :- ejemplo(8,A),
 test(33) :- not((ejemplo(9,A), caminoDeLongitud(A,5,_,_,s1,s2))).
 test(34) :- not((ejemplo(12,A), caminoDeLongitud(A,3,_,_,s2,s3))).
 
-
 %Test para ejercicio 6.
 test(35) :- ejemplo(2,A), alcanzable(A,si).
 test(36) :- ejemplo(11,A), alcanzable(A,s5).
@@ -421,7 +417,7 @@ test(39) :- not((ejemploMalo(3,A), alcanzable(A,s2))).
 test(40) :- not((ejemploMalo(4,A), alcanzable(A,s2))).
 
 %Test para ejercicio 7.
-%No agrego nuevos, ya que el dado por la cátedra verifica todos los ejemplos, y como ya creamos nuevos...
+%No agregamos nuevos, ya que el dado por la cátedra verifica todos los ejemplos dado y los nuevos.
 
 %Test para ejercicio 8.
 test(41) :- ejemplo(14, A), hayCiclo(A).
@@ -431,7 +427,7 @@ test(42) :- not((member(X, [11, 12, 13]), ejemplo(X, A), hayCiclo(A))).
 test(43) :- ejemplo(14,A), reconoce(A, [c,i,c,l,o,c,i,c,l,o]).
 test(44) :- not((ejemplo(14,A), reconoce(A, [c,i,c,l,o,c,i,c,l,o,c,i]))).
 test(45) :- ejemplo(11,A), findall(Palabra, reconoce(A,Palabra), [[t,a,s],[l,a,s],[t,o,c,o],[t,o,k,o],[l,o,c,o],[l,o,k,o]]).
-test(46) :- ejemplo(11,A), reconoce(A, [l,o,X,o]), member([X],[[k],[c]]). %¿Como escribo que el X es igual a k o a c?
+test(46) :- ejemplo(11,A), reconoce(A, [l,o,X,o]), member([X],[[k],[c]]).
 
 %Test para ejercicio 10.
 test(47):- ejemplo(11,A), palabraMasCorta(A,[t,a,s]).
