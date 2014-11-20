@@ -54,210 +54,63 @@
 
 
 \begin{verbatim}
-Object subclass: #Resultado
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'PLP-TP3'
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "
-
-Resultado class
-	instanceVariableNames: ''
-
-jugador1: unJugador conEleccion: unaEleccion jugador2: otroJugador conEleccion: otraEleccion 
-	(unaEleccion empataContra: otraEleccion) ifTrue: [
-		^ Empate entre: unJugador eligiendo: unaEleccion y: otroJugador eligiendo: otraEleccion.
-	].
-	^ (unaEleccion ganaContra: otraEleccion)
-	ifTrue: [ Victoria de: unJugador eligiendo: unaEleccion contra: otroJugador 
-									eligiendo: otraEleccion ]
-	ifFalse: [ Victoria de: otroJugador eligiendo: otraEleccion contra: unJugador 
-									eligiendo: unaEleccion ]. 
-
-Object subclass: #Eleccion
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'PLP-TP3'
-
-asString
-	^ self class name. 
-
-= otraEleccion
-	^self class = otraEleccion class. 
-
-hash
-	^ self class hash. 
-
-ganadorContraLagarto
-	^ self subclassResponsibility. 
-
-ganaContra: otraEleccion
-	^ (self noEmpataContra: otraEleccion)
-	 	and:
-		[ (self ganadorContra: otraEleccion) = self ] 
-
-noEmpataContra: otraEleccion
-	^ (self empataContra: otraEleccion) not. 
-
-pierdeContra: otraEleccion
-	^ (self noEmpataContra: otraEleccion)
-		and:
-		[ (self ganaContra: otraEleccion) not ] 
-
-empataContra: otraEleccion
-	^ (self ganadorContra: otraEleccion) isNil. 
-
-ganadorContra: otraEleccion
-	^ self subclassResponsibility. 
-
-ganadorContraPiedra
-	^ self subclassResponsibility. 
-
-ganadorContraPapel
-	^ Eleccion papel. 
-
-ganadorContraTijera
-	^ self subclassResponsibility. 
-
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "
-
-Eleccion class
-	instanceVariableNames: ''
-
-tijera
-	^ Tijera new. 
-
-lagarto
-	^ Lagarto new. 
-
-todas
-	^ self subclasses collect: [:eleccion | eleccion new]. 
-
-spock
-	^ Spock new. 
-
-papel
-	^ Papel new. 
-
-piedra
-	^ Piedra new. 
-
 Object subclass: #Jugador
 	instanceVariableNames: 'eleccion'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'PLP-TP3'
 
+eleccion
+
+	self subclassResponsibility. 
+
 perdioEligiendo: miEleccion contra: otroJugador eligiendo: eleccionContraria 
 
 empatoEligiendo: miEleccion contra: otroJugador eligiendo: eleccionContraria 
-
+	
 setEleccion: aEleccion 
-	self subclassResponsibility. 
-
-eleccion
-	self subclassResponsibility. 
+	eleccion := aEleccion. 
 
 ganoEligiendo: miEleccion contra: otroJugador eligiendo: eleccionContraria 
-	
+
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "
 
 Jugador class
 	instanceVariableNames: ''
 
-aleatorioConGenerador: aGeneradorRandomParaTest
-	|jugador|
-	jugador := JugadorAleatorio new.
-	jugador setEleccion: aGeneradorRandomParaTest.
-	^ jugador. 
+siempre: unaEleccion
+	^ JugadorSiempre new setEleccion: unaEleccion. 
 
 humano
-	^ self shouldBeImplemented. 
+	^ JugadorInteractivo new. 
+
+aleatorioConGenerador: unGenerador
+	^ JugadorAleatorio new setGenerador: unGenerador. 
+
+adaptativoIniciandoCon: unaEleccion
+	^ JugadorAdaptativo new setEleccion: unaEleccion. 
 
 conHistoriaHasta: cantidadDeResultadosAGuardar
 	^ self shouldBeImplemented. 
 
 aleatorio
-	^ self shouldBeImplemented. 
+	^ JugadorAleatorio new setGenerador: Random new. 
 
-siempre: unaEleccion
-	|jugador|
-	jugador := JugadorSiempre new.
-	jugador setEleccion: unaEleccion.
-	^ jugador. 
-
-adaptativoIniciandoCon: unaEleccion
-	|jugador|
-	jugador := JugadorAdaptativo new.
-	jugador setEleccion: unaEleccion.
-	^ jugador. 
-
-Jugador subclass: #JugadorAleatorio
+Object subclass: #Resultado
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'PLP-TP3'
 
-eleccion
-	^ Eleccion todas at: (eleccion nextInt: 0). 
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "
 
-setEleccion: aGenerador
-	eleccion := aGenerador. 
-
-Jugador subclass: #JugadorSiempre
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'PLP-TP3'
-
-eleccion
-	^ eleccion. 
-
-setEleccion: aEleccion 
-	eleccion := aEleccion. 
-
-Eleccion subclass: #Piedra
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'PLP-TP3'
-
-eleccionSuperadora
-	^ Eleccion papel. 
-
-ganadorContraPiedra
-	^nil. 
-
-ganadorContra: otraEleccion
-	^otraEleccion ganadorContraPiedra. 
-
-ganadorContraPapel
-	^ Eleccion papel. 
-
-ganadorContraTijera
-	^self. 
-
-Eleccion subclass: #Tijera
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'PLP-TP3'
-
-eleccionSuperadora
-	^ Eleccion piedra. 
-
-ganadorContraPiedra
-	^ Eleccion piedra. 
-
-ganadorContra: otraEleccion
-	^ otraEleccion ganadorContraTijera . 
-
-ganadorContraPapel
-	^self. 
-
-ganadorContraTijera
-	^nil. 
+jugador1: unJugador conEleccion: unaEleccion jugador2: otroJugador conEleccion: otraEleccion 
+	(unaEleccion empataContra: otraEleccion) ifTrue: [
+		^ Empate entre: unJugador eligiendo: unaEleccion y: otroJugador eligiendo: otraEleccion.
+	].
+	^ (unaEleccion ganaContra: otraEleccion)
+	ifTrue: [ Victoria de: unJugador eligiendo: unaEleccion contra: otroJugador eligiendo: otraEleccion ]
+	ifFalse: [ Victoria de: otroJugador eligiendo: otraEleccion contra: unJugador eligiendo: unaEleccion ]. 
 
 Resultado subclass: #Victoria
 	instanceVariableNames: 'ganador eleccionGanadora perdedor eleccionPerdedora'
@@ -265,8 +118,8 @@ Resultado subclass: #Victoria
 	poolDictionaries: ''
 	category: 'PLP-TP3'
 
-esEmpate
-	^ false. 
+ganador
+	^ ganador 
 
 ganador: unJugador eleccionGanadora: unaEleccion perdedor: otroJugador eligiendo: otraEleccion 
 	ganador := unJugador.
@@ -274,16 +127,14 @@ ganador: unJugador eleccionGanadora: unaEleccion perdedor: otroJugador eligiendo
 	perdedor := otroJugador.
 	eleccionPerdedora := otraEleccion. 
 
-ganador
-	^ ganador 
-
 notificarAJugadores
-	perdedor perdioEligiendo:  eleccionPerdedora  contra: ganador eligiendo: eleccionGanadora. 
+	perdedor perdioEligiendo:  eleccionPerdedora  contra: ganador eligiendo: eleccionGanadora.
+	ganador ganoEligiendo: eleccionGanadora contra: perdedor eligiendo: eleccionPerdedora.  
+
+esEmpate
+	^ false. 
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "
-
-Victoria class
-	instanceVariableNames: ''
 
 de: unJugador eligiendo: unaEleccion contra: otroJugador eligiendo: otraEleccion 
 	^ self new 
@@ -292,36 +143,6 @@ de: unJugador eligiendo: unaEleccion contra: otroJugador eligiendo: otraEleccion
 		perdedor: otroJugador
 		eligiendo: otraEleccion;
 		yourself. 
-
-Jugador subclass: #JugadorAdaptativo
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'PLP-TP3'
-
-eleccion
-	^ eleccion. 
-
-empatoEligiendo: miEleccion contra: otroJugador eligiendo: eleccionContraria 
-	eleccion := eleccionContraria eleccionSuperadora.  
-
-perdioEligiendo: miEleccion contra: otroJugador eligiendo: eleccionContraria 
-	eleccion := eleccionContraria eleccionSuperadora.  
-
-setEleccion: aEleccion 
-	eleccion := aEleccion. 
-
-Object subclass: #GeneradorRandomParaTest
-	instanceVariableNames: 'siguiente'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'PLP-TP3'
-
-siguiente: unNumeroAleatorio
-	siguiente := unNumeroAleatorio. 
-
-nextInt: anInteger 
-	^ siguiente. 
 
 Resultado subclass: #Empate
 	instanceVariableNames: 'jugador1 eleccion1 jugador2 eleccion2'
@@ -335,20 +156,17 @@ jugador1: unJugador eleccion1: unaEleccion jugador2: otroJugador eleccion2: otra
 	jugador2 := otroJugador.
 	eleccion2 := otraEleccion. 
 
+notificarAJugadores
+	jugador1 empatoEligiendo: eleccion1 contra: jugador2 eligiendo: eleccion2. 
+	jugador2 empatoEligiendo: eleccion2 contra: jugador1 eligiendo: eleccion1. 
+
 esEmpate
 	^ true. 
 
 ganador
 	^ nil. 
 
-notificarAJugadores
-	jugador1 empatoEligiendo: eleccion1 contra: jugador2 eligiendo: eleccion2. 
-	jugador2 empatoEligiendo: eleccion2 contra: jugador1 eligiendo: eleccion1. 
-
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "
-
-Empate class
-	instanceVariableNames: ''
 
 entre: unJugador eligiendo: unaEleccion y: otroJugador eligiendo: otraEleccion 
 	^ self new
@@ -357,6 +175,166 @@ entre: unJugador eligiendo: unaEleccion y: otroJugador eligiendo: otraEleccion
 		jugador2: otroJugador
 		eleccion2: otraEleccion;
 		yourself. 
+
+Object subclass: #GeneradorRandomParaTest
+	instanceVariableNames: 'siguiente'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PLP-TP3'
+
+siguiente: unNumeroAleatorio
+	siguiente := unNumeroAleatorio. 
+
+nextInt: anInteger 
+	^ siguiente. 
+
+Object subclass: #Juego
+	instanceVariableNames: 'jugador1 jugador2 resultado eleccion1 eleccion2'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PLP-TP3'
+
+revancha
+	^ self iniciar. 
+
+iniciar
+	eleccion1 := jugador1 eleccion.
+	eleccion2 := jugador2 eleccion.
+	resultado := Resultado jugador1: jugador1 conEleccion: eleccion1
+				 			jugador2: jugador2 conEleccion: eleccion2.
+	resultado notificarAJugadores. 
+
+jugador1: unJugador jugador2: otroJugador 
+	jugador1 := unJugador.
+	jugador2 := otroJugador. 
+
+resultado
+	resultado isNil ifTrue: [ self iniciar ].
+	^ resultado. 
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "
+
+mejorDe: cantidadDeJuegos entre: unJugador y: otroJugador
+	| j |
+	j := Juego entre: unJugador y: otroJugador.
+	cantidadDeJuegos timesRepeat: [ j iniciar ]. 
+
+entre: unJugador y: otroJugador 
+	^ self new jugador1: unJugador jugador2: otroJugador;
+			yourself. 
+
+mejorDe: cantidadDeJuegos contra: unJugador
+	Juego mejorDe: cantidadDeJuegos entre: Jugador humano y: unJugador. 
+
+Jugador subclass: #JugadorAdaptativo
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PLP-TP3'
+
+empatoEligiendo: miEleccion contra: otroJugador eligiendo: eleccionContraria 
+	eleccion := eleccionContraria eleccionSuperadora.  
+
+perdioEligiendo: miEleccion contra: otroJugador eligiendo: eleccionContraria 
+	eleccion := eleccionContraria eleccionSuperadora.  
+
+eleccion
+	^ eleccion. 
+
+Jugador subclass: #JugadorSiempre
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PLP-TP3'
+
+eleccion
+	^ eleccion. 
+
+Object subclass: #Eleccion
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PLP-TP3'
+
+ganadorContra: otraEleccion
+	^ self subclassResponsibility. 
+
+ganadorContraTijera
+	^ self subclassResponsibility. 
+
+ganadorContraPapel
+	^ Eleccion papel. 
+
+ganadorContraPiedra
+	^ self subclassResponsibility. 
+
+noEmpataContra: otraEleccion
+	^ (self empataContra: otraEleccion) not. 
+
+empataContra: otraEleccion
+	^ (self ganadorContra: otraEleccion) isNil. 
+
+pierdeContra: otraEleccion
+	^ (self noEmpataContra: otraEleccion)
+		and:
+		[ (self ganaContra: otraEleccion) not ] 
+
+ganaContra: otraEleccion
+	^ (self noEmpataContra: otraEleccion)
+	 	and:
+		[ (self ganadorContra: otraEleccion) = self ] 
+
+asString
+	^ self class name. 
+
+= otraEleccion
+	^self class = otraEleccion class. 
+
+hash
+	^ self class hash. 
+
+ganadorContraLagarto
+	^ self subclassResponsibility. 
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "
+lagarto
+	^ Lagarto new. 
+
+papel
+	^ Papel new. 
+
+piedra
+	^ Piedra new. 
+
+spock
+	^ Spock new. 
+
+tijera
+	^ Tijera new. 
+
+todas
+	^ (Eleccion class selectorsInProtocol: 'creacion') collect: [:a |  Eleccion perform: a]. 
+
+Eleccion subclass: #Tijera
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PLP-TP3'
+
+eleccionSuperadora
+	^ Eleccion piedra. 
+
+ganadorContraTijera
+	^nil. 
+
+ganadorContraPapel
+	^self. 
+
+ganadorContraPiedra
+	^ Eleccion piedra. 
+
+ganadorContra: otraEleccion
+	^ otraEleccion ganadorContraTijera . 
 
 Eleccion subclass: #Spock
 	instanceVariableNames: ''
@@ -370,16 +348,20 @@ eleccionSuperadora
 ganadorContraLagarto
 	^ Eleccion lagarto. 
 
-ganadorContraPiedra
-	^ self. 
 ganadorContra: aEleccion 
 	^ aEleccion ganadorContraSpock. 
+
+ganadorContraPiedra
+	^ self. 
 
 Eleccion subclass: #Lagarto
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'PLP-TP3'
+
+ganadorContra: otraEleccion
+	^ otraEleccion ganadorContraLagarto. 
 
 ganadorContraSpock
 	^ self. 
@@ -390,11 +372,39 @@ eleccionSuperadora
 ganadorContraLagarto
 	^ nil. 
 
-ganadorContra: otraEleccion 
-	^ otraEleccion ganadorContraLagarto. 
-
 ganadorContraPiedra
 	^ Eleccion piedra. 
+
+Jugador subclass: #JugadorInteractivo
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PLP-TP3'
+
+perdioEligiendo: miEleccion contra: otroJugador eligiendo: eleccionContraria 
+     UITheme current
+     messageIn: Morph new
+     text: 'Perdiste contra ', eleccionContraria asString
+     title: 'Resultado'. 
+
+empatoEligiendo: miEleccion contra: otroJugador eligiendo: eleccionContraria
+    UITheme current
+     messageIn: Morph new
+     text: 'Empataste con ', eleccionContraria asString
+     title: 'Resultado'.
+
+eleccion
+	^ UITheme current
+	   chooseDropListIn: Morph new
+	   text: 'Que jugamos?'
+         title: 'Nueva'
+         list: Eleccion todas. 
+
+ganoEligiendo: miEleccion contra: otroJugador eligiendo: eleccionContraria
+     UITheme current
+     messageIn: Morph new
+     text: 'Le ganaste a ', eleccionContraria asString
+     title: 'Resultado'. 
 
 Eleccion subclass: #Papel
 	instanceVariableNames: ''
@@ -405,58 +415,53 @@ Eleccion subclass: #Papel
 eleccionSuperadora
 	^ Eleccion tijera. 
 
+ganadorContraTijera
+	^ Eleccion tijera. 
+
+ganadorContraPapel
+	^nil. 
+
 ganadorContraPiedra
 	^self. 
 
 ganadorContra: otraEleccion
 	^otraEleccion  ganadorContraPapel.  
 
-ganadorContraPapel
-	^nil. 
-
-ganadorContraTijera
-	^ Eleccion tijera. 
-
-Object subclass: #Juego
-	instanceVariableNames: 'jugador1 jugador2 resultado eleccion1 eleccion2'
+Eleccion subclass: #Piedra
+	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'PLP-TP3'
 
-jugador1: unJugador jugador2: otroJugador 
-	jugador1 := unJugador.
-	jugador2 := otroJugador. 
+eleccionSuperadora
+	^ Eleccion papel. 
 
-revancha
-	^ self iniciar. 
+ganadorContraTijera
+	^self. 
 
-resultado	
-	resultado isNil ifTrue: [ self iniciar ].	
-	^ resultado. 
+ganadorContraPapel
+	^ Eleccion papel. 
 
-iniciar
-	eleccion1 := jugador1 eleccion.
-	eleccion2 := jugador2 eleccion.
-	resultado := Resultado jugador1: jugador1 conEleccion: eleccion1
-				 			jugador2: jugador2 conEleccion: eleccion2.
-	resultado notificarAJugadores. 
+ganadorContraPiedra
+	^nil. 
 
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "
+ganadorContra: otraEleccion
+	^otraEleccion ganadorContraPiedra. 
 
-Juego class
-	instanceVariableNames: ''
+Jugador subclass: #JugadorAleatorio
+	instanceVariableNames: 'generador'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PLP-TP3'
 
-mejorDe: cantidadDeJuegos contra: unJugador
-	Juego mejorDe: cantidadDeJuegos entre: Jugador humano y: unJugador. 
+setGenerador: unGenerador
+	generador := unGenerador. 
 
-mejorDe: cantidadDeJuegos entre: unJugador y: otroJugador
-	| j |
-	j := Juego entre: unJugador y: otroJugador.
-	cantidadDeJuegos timesRepeat: [ j iniciar ]. 
+eleccion
+	|todasLasElecciones|
+	todasLasElecciones := Eleccion todas.
+	^ todasLasElecciones at: (generador nextInt: todasLasElecciones size). 
 
-entre: unJugador y: otroJugador 
-	^ self new jugador1: unJugador jugador2: otroJugador;
-			yourself. 
 \end{verbatim}
 
 
